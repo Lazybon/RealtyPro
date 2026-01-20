@@ -47,3 +47,6 @@ waitForPort = 5000
 [userenv.shared]
 SERVER_PORT = "4000"
 NEXT_PUBLIC_GRAPHQL_URL = "http://localhost:4000/graphql"
+
+[agent]
+integrations = ["javascript_log_in_with_replit:2.0.0"]

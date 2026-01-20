@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/use-auth';
 import {
   Home as HomeIcon,
   Search,
@@ -27,6 +29,9 @@ import {
   TrendingUp,
   Award,
   Banknote,
+  MessageCircle,
+  User,
+  LogOut,
 } from 'lucide-react';
 
 const heroImage = '/images/modern_luxury_apartm_1ebc8f0f.jpg';
@@ -146,6 +151,16 @@ const securitySteps = [
 ];
 
 export default function Home() {
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
+
+  const displayName = user?.firstName && user?.lastName
+    ? `${user.firstName} ${user.lastName}`
+    : user?.firstName || user?.email || "Пользователь";
+
+  const initials = user?.firstName && user?.lastName
+    ? `${user.firstName[0]}${user.lastName[0]}`
+    : user?.email?.[0]?.toUpperCase() || "U";
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -166,12 +181,39 @@ export default function Home() {
             <Link href="/services" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" data-testid="link-services">
               Сервисы
             </Link>
+            {isAuthenticated && (
+              <Link href="/messages" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" data-testid="link-messages">
+                <span className="flex items-center gap-1">
+                  <MessageCircle className="h-4 w-4" />
+                  Сообщения
+                </span>
+              </Link>
+            )}
           </nav>
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Button variant="outline" size="sm" asChild data-testid="button-login">
-              <Link href="/api/login">Войти</Link>
-            </Button>
+            {isLoading ? (
+              <div className="h-8 w-16 animate-pulse rounded bg-muted" />
+            ) : isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" asChild data-testid="link-profile">
+                  <Link href="/profile" className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={user?.profileImageUrl || undefined} />
+                      <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                    </Avatar>
+                    <span className="hidden sm:inline">{displayName}</span>
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => logout()} data-testid="button-logout">
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" size="sm" asChild data-testid="button-login">
+                <Link href="/api/login">Войти</Link>
+              </Button>
+            )}
           </div>
         </div>
       </header>

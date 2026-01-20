@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { ApolloWrapper } from '@/lib/apollo-wrapper';
 import { ThemeProvider } from '@/components/theme-provider';
+import { QueryProvider } from '@/lib/query-provider';
 import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({
@@ -34,7 +35,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ApolloWrapper>{children}</ApolloWrapper>
+          <QueryProvider>
+            <ApolloWrapper>{children}</ApolloWrapper>
+          </QueryProvider>
           <Toaster />
         </ThemeProvider>
       </body>

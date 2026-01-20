@@ -7,24 +7,67 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  posts     Post[]
+  id              String    @id
+  email           String?   @unique
+  firstName       String?   @map("first_name")
+  lastName        String?   @map("last_name")
+  profileImageUrl String?   @map("profile_image_url")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+  
+  chats           ChatParticipant[]
+  messages        Message[]
+  
+  @@map("users")
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Session {
+  sid    String   @id
+  sess   Json
+  expire DateTime
+  
+  @@index([expire])
+  @@map("sessions")
+}
 
-  @@index([authorId])
+model Chat {
+  id          String   @id @default(cuid())
+  type        String   @default("deal")
+  title       String?
+  apartmentId String?  @map("apartment_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  
+  participants ChatParticipant[]
+  messages     Message[]
+  
+  @@map("chats")
+}
+
+model ChatParticipant {
+  id        String   @id @default(cuid())
+  chatId    String   @map("chat_id")
+  userId    String   @map("user_id")
+  role      String   @default("member")
+  joinedAt  DateTime @default(now()) @map("joined_at")
+  
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([chatId, userId])
+  @@map("chat_participants")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  chatId    String   @map("chat_id")
+  senderId  String   @map("sender_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  
+  @@index([chatId])
+  @@map("messages")
 }
