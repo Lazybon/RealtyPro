@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { builder } from '../builder.js';
-import { UserType, CreateUserInput, UpdateUserInput } from '../types/user.js';
+import { UserType, AuthPayloadType, RegisterInput, LoginInput, UpdateUserInput } from '../types/user.js';
 
 builder.queryField('users', (t) =>
   t.field({
@@ -28,21 +28,78 @@ builder.queryField('user', (t) =>
   })
 );
 
-builder.mutationField('createUser', (t) =>
+builder.queryField('me', (t) =>
   t.field({
     type: UserType,
+    nullable: true,
+    resolve: async (_parent, _args, ctx) => {
+      if (!ctx.userId) return null;
+      return ctx.prisma.user.findUnique({
+        where: { id: ctx.userId },
+      });
+    },
+  })
+);
+
+builder.mutationField('register', (t) =>
+  t.field({
+    type: AuthPayloadType,
     args: {
-      input: t.arg({ type: CreateUserInput, required: true }),
+      input: t.arg({ type: RegisterInput, required: true }),
     },
     resolve: async (_parent, args, ctx) => {
+      const existingUser = await ctx.prisma.user.findUnique({
+        where: { email: args.input.email },
+      });
+      
+      if (existingUser) {
+        throw new Error('Пользователь с таким email уже существует');
+      }
+      
       const hashedPassword = await bcrypt.hash(args.input.password, 10);
-      return ctx.prisma.user.create({
+      
+      const user = await ctx.prisma.user.create({
         data: {
           email: args.input.email,
-          name: args.input.name,
           password: hashedPassword,
-        },
+          firstName: args.input.firstName,
+          lastName: args.input.lastName,
+        } as any,
       });
+      
+      return {
+        user,
+        token: user.id,
+      };
+    },
+  })
+);
+
+builder.mutationField('login', (t) =>
+  t.field({
+    type: AuthPayloadType,
+    args: {
+      input: t.arg({ type: LoginInput, required: true }),
+    },
+    resolve: async (_parent, args, ctx) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: { email: args.input.email },
+      });
+      
+      if (!user) {
+        throw new Error('Неверный email или пароль');
+      }
+      
+      const validPassword = await bcrypt.compare(args.input.password, (user as any).password);
+      
+      if (!validPassword) {
+        throw new Error('Неверный email или пароль');
+      }
+      
+      return {
+        user,
+        token: user.id,
+      };
     },
   })
 );
@@ -59,8 +116,9 @@ builder.mutationField('updateUser', (t) =>
       return ctx.prisma.user.update({
         where: { id: String(args.id) },
         data: {
-          ...(args.input.email && { email: args.input.email }),
-          ...(args.input.name !== undefined && { name: args.input.name }),
+          ...(args.input.firstName !== undefined && { firstName: args.input.firstName }),
+          ...(args.input.lastName !== undefined && { lastName: args.input.lastName }),
+          ...(args.input.profileImageUrl !== undefined && { profileImageUrl: args.input.profileImageUrl }),
         },
       });
     },
