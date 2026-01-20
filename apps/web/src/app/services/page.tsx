@@ -132,7 +132,7 @@ export default function ServicesPage() {
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <Button variant="outline" asChild data-testid="button-login">
-              <Link href="/api/login">Войти</Link>
+              <Link href="/login">Войти</Link>
             </Button>
           </div>
         </div>
@@ -220,7 +220,7 @@ export default function ServicesPage() {
                     <div className="flex items-center justify-between border-t pt-4">
                       <div className="text-lg font-bold text-primary">{service.price}</div>
                       <Button asChild data-testid={`button-try-${service.id}`}>
-                        <Link href="/api/login">
+                        <Link href="/login">
                           Попробовать
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
@@ -252,7 +252,7 @@ export default function ServicesPage() {
                     asChild
                     data-testid="button-consultation"
                   >
-                    <Link href="/api/login">Получить консультацию</Link>
+                    <Link href="/login">Получить консультацию</Link>
                   </Button>
                 </div>
               </CardContent>

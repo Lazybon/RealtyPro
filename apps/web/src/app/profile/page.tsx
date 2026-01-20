@@ -43,7 +43,7 @@ export default function ProfilePage() {
         <h1 className="text-2xl font-bold">Необходима авторизация</h1>
         <p className="text-muted-foreground">Войдите в систему для доступа к личному кабинету</p>
         <Button asChild>
-          <Link href="/api/login">Войти</Link>
+          <Link href="/login">Войти</Link>
         </Button>
       </div>
     );

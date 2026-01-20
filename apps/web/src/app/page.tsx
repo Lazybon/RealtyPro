@@ -211,7 +211,7 @@ export default function Home() {
               </div>
             ) : (
               <Button variant="outline" size="sm" asChild data-testid="button-login">
-                <Link href="/api/login">Войти</Link>
+                <Link href="/login">Войти</Link>
               </Button>
             )}
           </div>
@@ -624,7 +624,7 @@ export default function Home() {
                     asChild
                     data-testid="button-cta-register"
                   >
-                    <Link href="/api/login">Создать аккаунт</Link>
+                    <Link href="/register">Создать аккаунт</Link>
                   </Button>
                 </div>
               </CardContent>

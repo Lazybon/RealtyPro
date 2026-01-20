@@ -178,7 +178,7 @@ export default function SearchPage() {
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <Button variant="outline" asChild data-testid="button-login">
-              <Link href="/api/login">Войти</Link>
+              <Link href="/login">Войти</Link>
             </Button>
           </div>
         </div>
