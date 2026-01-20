@@ -45,9 +45,16 @@ export async function GET(request: NextRequest) {
   const host = request.headers.get("host") || "localhost:5000";
   const protocol = host.includes("localhost") ? "http" : "https";
   
+  const code_verifier = request.cookies.get("pkce_code_verifier")?.value;
+  
+  if (!code_verifier) {
+    return NextResponse.redirect(`${protocol}://${host}/?error=no_code_verifier`);
+  }
+  
   try {
     const tokens = await client.authorizationCodeGrant(config, new URL(request.url), {
       expectedState: client.skipStateCheck,
+      pkceCodeVerifier: code_verifier,
     });
     
     const claims = tokens.claims();
@@ -74,6 +81,8 @@ export async function GET(request: NextRequest) {
     });
     
     const response = NextResponse.redirect(`${protocol}://${host}/`);
+    
+    response.cookies.delete("pkce_code_verifier");
     
     const session = await getIronSession<SessionData>(request, response, sessionOptions);
     session.userId = claims.sub;
