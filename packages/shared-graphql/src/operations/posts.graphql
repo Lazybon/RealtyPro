@@ -1,0 +1,68 @@
+query GetPosts($published: Boolean) {
+  posts(published: $published) {
+    id
+    title
+    content
+    published
+    authorId
+    createdAt
+    updatedAt
+    author {
+      id
+      name
+      email
+    }
+  }
+}
+
+query GetPost($id: ID!) {
+  post(id: $id) {
+    id
+    title
+    content
+    published
+    authorId
+    createdAt
+    updatedAt
+    author {
+      id
+      name
+      email
+    }
+  }
+}
+
+mutation CreatePost($input: CreatePostInput!) {
+  createPost(input: $input) {
+    id
+    title
+    content
+    published
+    authorId
+    createdAt
+  }
+}
+
+mutation UpdatePost($id: ID!, $input: UpdatePostInput!) {
+  updatePost(id: $id, input: $input) {
+    id
+    title
+    content
+    published
+    updatedAt
+  }
+}
+
+mutation DeletePost($id: ID!) {
+  deletePost(id: $id) {
+    id
+  }
+}
+
+mutation PublishPost($id: ID!) {
+  publishPost(id: $id) {
+    id
+    published
+    updatedAt
+  }
+}
