@@ -1,12 +1,9 @@
-import * as client from "openid-client";
 import { getIronSession, SessionOptions, IronSession } from "iron-session";
 import { cookies } from "next/headers";
 
 export interface SessionData {
   userId?: string;
   accessToken?: string;
-  refreshToken?: string;
-  expiresAt?: number;
   claims?: {
     sub: string;
     email?: string;
@@ -32,43 +29,10 @@ export async function getSession(): Promise<IronSession<SessionData>> {
   return getIronSession<SessionData>(cookieStore, sessionOptions);
 }
 
-let oidcConfig: Awaited<ReturnType<typeof client.discovery>> | null = null;
-
-export async function getOidcConfig() {
-  if (!oidcConfig) {
-    oidcConfig = await client.discovery(
-      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
-    );
-  }
-  return oidcConfig;
-}
-
 export async function getCurrentUser() {
   const session = await getSession();
-  if (!session.userId || !session.claims) {
+  if (!session.userId || !session.claims || !session.accessToken) {
     return null;
-  }
-  
-  const now = Math.floor(Date.now() / 1000);
-  if (session.expiresAt && now > session.expiresAt) {
-    if (session.refreshToken) {
-      try {
-        const config = await getOidcConfig();
-        const tokenResponse = await client.refreshTokenGrant(config, session.refreshToken);
-        session.accessToken = tokenResponse.access_token;
-        session.refreshToken = tokenResponse.refresh_token;
-        session.expiresAt = tokenResponse.claims()?.exp;
-        session.claims = tokenResponse.claims() as SessionData["claims"];
-        await session.save();
-      } catch {
-        await session.destroy();
-        return null;
-      }
-    } else {
-      await session.destroy();
-      return null;
-    }
   }
   
   return {

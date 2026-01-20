@@ -15,29 +15,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const graphqlResponse = await fetch(GRAPHQL_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: `
-          mutation Login($input: LoginInput!) {
-            login(input: $input) {
-              user {
-                id
-                email
-                firstName
-                lastName
-                profileImageUrl
+    let graphqlResponse;
+    try {
+      graphqlResponse = await fetch(GRAPHQL_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: `
+            mutation Login($input: LoginInput!) {
+              login(input: $input) {
+                user {
+                  id
+                  email
+                  firstName
+                  lastName
+                  profileImageUrl
+                }
+                token
               }
-              token
             }
-          }
-        `,
-        variables: {
-          input: { email, password },
-        },
-      }),
-    });
+          `,
+          variables: {
+            input: { email, password },
+          },
+        }),
+      });
+    } catch (networkError) {
+      console.error("Network error during login:", networkError);
+      return NextResponse.json(
+        { error: "Не удалось подключиться к серверу авторизации" },
+        { status: 503 }
+      );
+    }
 
     const data = await graphqlResponse.json();
 
@@ -48,12 +57,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!data.data?.login?.user || !data.data?.login?.token) {
+      return NextResponse.json(
+        { error: "Неверный ответ от сервера авторизации" },
+        { status: 500 }
+      );
+    }
+
     const { user, token } = data.data.login;
 
     const response = NextResponse.json({ success: true, user });
     
     const session = await getIronSession<SessionData>(request, response, sessionOptions);
     session.userId = user.id;
+    session.accessToken = token;
     session.claims = {
       sub: user.id,
       email: user.email,
