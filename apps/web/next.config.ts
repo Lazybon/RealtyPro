@@ -2,6 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
   transpilePackages: ['@repo/shared-graphql', '@repo/config'],
   allowedDevOrigins: [
     'localhost',

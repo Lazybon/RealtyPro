@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
 import { sessionOptions, SessionData } from "@/lib/auth";
 
-const GRAPHQL_URL = process.env.NEXT_PUBLIC_GRAPHQL_URL || "http://localhost:4000";
+const GRAPHQL_URL = process.env.INTERNAL_GRAPHQL_URL || "http://localhost:4000/graphql";
 
 export async function POST(request: NextRequest) {
   try {
