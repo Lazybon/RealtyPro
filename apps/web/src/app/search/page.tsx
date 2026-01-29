@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Header } from '@/components/header';
@@ -17,131 +17,111 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Home as HomeIcon,
   Search,
   Heart,
   Bed,
-  Bath,
   Square,
   MapPin,
   SlidersHorizontal,
   Grid3X3,
   List,
-  X,
-  MessageCircle,
+  Loader2,
+  Home as HomeIcon,
 } from 'lucide-react';
 
-const apartmentImage1 = '/images/luxury_apartment_liv_8cce6e76.jpg';
-const apartmentImage2 = '/images/luxury_apartment_liv_e4153194.jpg';
-const apartmentImage3 = '/images/luxury_apartment_liv_8645fea3.jpg';
-const apartmentImage4 = '/images/luxury_apartment_liv_a9956975.jpg';
+interface Listing {
+  id: string;
+  title: string;
+  description: string | null;
+  propertyType: string;
+  dealType: string;
+  price: number;
+  currency: string;
+  area: number;
+  rooms: number;
+  floor: number | null;
+  totalFloors: number | null;
+  address: string;
+  city: string;
+  district: string | null;
+  metroStation: string | null;
+  images: string[];
+  published: boolean;
+  viewsCount: number;
+  createdAt: string;
+  user?: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+  };
+}
 
-const allApartments = [
-  {
-    id: 1,
-    title: 'Просторная 3-комн. квартира в центре',
-    price: 18500000,
-    priceFormatted: '18 500 000',
-    address: 'Москва, ул. Тверская, 12',
-    district: 'ЦАО',
-    bedrooms: 3,
-    bathrooms: 2,
-    area: 98,
-    image: apartmentImage1,
-    badges: ['Проверено', 'Собственник'],
-    floor: 5,
-    totalFloors: 12,
-  },
-  {
-    id: 2,
-    title: 'Студия в стиле Лофт',
-    price: 8900000,
-    priceFormatted: '8 900 000',
-    address: 'Москва, ул. Бауманская, 44',
-    district: 'ЦАО',
-    bedrooms: 1,
-    bathrooms: 1,
-    area: 42,
-    image: apartmentImage2,
-    badges: ['Ипотека 5%'],
-    floor: 3,
-    totalFloors: 8,
-  },
-  {
-    id: 3,
-    title: 'Видовая квартира в Москва-Сити',
-    price: 45000000,
-    priceFormatted: '45 000 000',
-    address: 'Москва, Пресненская наб., 8',
-    district: 'ЗАО',
-    bedrooms: 2,
-    bathrooms: 2,
-    area: 85,
-    image: apartmentImage3,
-    badges: ['Премиум', 'Панорамный вид'],
-    floor: 42,
-    totalFloors: 56,
-  },
-  {
-    id: 4,
-    title: 'Двушка у парка Горького',
-    price: 14200000,
-    priceFormatted: '14 200 000',
-    address: 'Москва, Ленинский пр-т, 24',
-    district: 'ЮАО',
-    bedrooms: 2,
-    bathrooms: 1,
-    area: 56,
-    image: apartmentImage4,
-    badges: ['Срочно'],
-    floor: 7,
-    totalFloors: 17,
-  },
-  {
-    id: 5,
-    title: 'Элитная 4-комн. квартира',
-    price: 75000000,
-    priceFormatted: '75 000 000',
-    address: 'Москва, Остоженка, 11',
-    district: 'ЦАО',
-    bedrooms: 4,
-    bathrooms: 3,
-    area: 180,
-    image: apartmentImage1,
-    badges: ['Премиум', 'Терраса'],
-    floor: 8,
-    totalFloors: 10,
-  },
-  {
-    id: 6,
-    title: 'Уютная однушка в тихом районе',
-    price: 7500000,
-    priceFormatted: '7 500 000',
-    address: 'Москва, ул. Академика Янгеля, 5',
-    district: 'ЮЗАО',
-    bedrooms: 1,
-    bathrooms: 1,
-    area: 38,
-    image: apartmentImage2,
-    badges: ['Метро рядом'],
-    floor: 2,
-    totalFloors: 9,
-  },
-];
+const GRAPHQL_URL = '/api/graphql';
+
+async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+  const res = await fetch(GRAPHQL_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ query, variables }),
+  });
+  const json = await res.json();
+  if (json.errors) {
+    throw new Error(json.errors[0]?.message || 'GraphQL Error');
+  }
+  return json.data;
+}
+
+const LISTINGS_QUERY = `
+  query Listings($published: Boolean, $city: String) {
+    listings(published: $published, city: $city) {
+      id
+      title
+      description
+      propertyType
+      dealType
+      price
+      currency
+      area
+      rooms
+      floor
+      totalFloors
+      address
+      city
+      district
+      metroStation
+      images
+      published
+      viewsCount
+      createdAt
+    }
+  }
+`;
+
+const defaultImage = '/images/luxury_apartment_liv_8cce6e76.jpg';
 
 export default function SearchPage() {
-  const [priceRange, setPriceRange] = useState([5000000, 50000000]);
-  const [areaRange, setAreaRange] = useState([30, 150]);
+  const [priceRange, setPriceRange] = useState([1000000, 100000000]);
+  const [areaRange, setAreaRange] = useState([10, 300]);
   const [rooms, setRooms] = useState<string>('any');
-  const [district, setDistrict] = useState<string>('any');
+  const [city, setCity] = useState<string>('any');
+  const [dealType, setDealType] = useState<string>('any');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(true);
 
-  const filteredApartments = allApartments.filter((apt) => {
-    if (apt.price < priceRange[0] || apt.price > priceRange[1]) return false;
-    if (apt.area < areaRange[0] || apt.area > areaRange[1]) return false;
-    if (rooms !== 'any' && apt.bedrooms !== parseInt(rooms)) return false;
-    if (district !== 'any' && apt.district !== district) return false;
+  const { data, isLoading } = useQuery({
+    queryKey: ['listings', 'published'],
+    queryFn: () => graphqlRequest<{ listings: Listing[] }>(LISTINGS_QUERY, { published: true }),
+  });
+
+  const listings = data?.listings || [];
+
+  const filteredListings = listings.filter((listing) => {
+    if (listing.price < priceRange[0] || listing.price > priceRange[1]) return false;
+    if (listing.area < areaRange[0] || listing.area > areaRange[1]) return false;
+    if (rooms !== 'any' && listing.rooms !== parseInt(rooms)) return false;
+    if (city !== 'any' && listing.city !== city) return false;
+    if (dealType !== 'any' && listing.dealType !== dealType) return false;
     return true;
   });
 
@@ -152,6 +132,25 @@ export default function SearchPage() {
     return value.toLocaleString('ru-RU');
   };
 
+  const formatFullPrice = (price: number, currency: string) => {
+    return new Intl.NumberFormat('ru-RU', {
+      style: 'currency',
+      currency: currency,
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
+  const propertyTypeLabels: Record<string, string> = {
+    apartment: 'Квартира',
+    house: 'Дом',
+    studio: 'Студия',
+  };
+
+  const dealTypeLabels: Record<string, string> = {
+    sale: 'Продажа',
+    rent: 'Аренда',
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -160,7 +159,9 @@ export default function SearchPage() {
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold" data-testid="heading-search">Поиск квартир</h1>
-            <p className="text-muted-foreground">Найдено {filteredApartments.length} объектов</p>
+            <p className="text-muted-foreground">
+              {isLoading ? 'Загрузка...' : `Найдено ${filteredListings.length} объектов`}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -206,15 +207,30 @@ export default function SearchPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        setPriceRange([5000000, 50000000]);
-                        setAreaRange([30, 150]);
+                        setPriceRange([1000000, 100000000]);
+                        setAreaRange([10, 300]);
                         setRooms('any');
-                        setDistrict('any');
+                        setCity('any');
+                        setDealType('any');
                       }}
                       data-testid="button-reset-filters"
                     >
                       Сбросить
                     </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Тип сделки</Label>
+                    <Select value={dealType} onValueChange={setDealType}>
+                      <SelectTrigger data-testid="select-deal-type">
+                        <SelectValue placeholder="Любой" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="any">Любой</SelectItem>
+                        <SelectItem value="sale">Продажа</SelectItem>
+                        <SelectItem value="rent">Аренда</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-3">
@@ -258,22 +274,18 @@ export default function SearchPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Район</Label>
-                    <Select value={district} onValueChange={setDistrict}>
-                      <SelectTrigger data-testid="select-district">
+                    <Label>Город</Label>
+                    <Select value={city} onValueChange={setCity}>
+                      <SelectTrigger data-testid="select-city">
                         <SelectValue placeholder="Любой" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="any">Любой</SelectItem>
-                        <SelectItem value="ЦАО">ЦАО</SelectItem>
-                        <SelectItem value="САО">САО</SelectItem>
-                        <SelectItem value="СВАО">СВАО</SelectItem>
-                        <SelectItem value="ВАО">ВАО</SelectItem>
-                        <SelectItem value="ЮВАО">ЮВАО</SelectItem>
-                        <SelectItem value="ЮАО">ЮАО</SelectItem>
-                        <SelectItem value="ЮЗАО">ЮЗАО</SelectItem>
-                        <SelectItem value="ЗАО">ЗАО</SelectItem>
-                        <SelectItem value="СЗАО">СЗАО</SelectItem>
+                        <SelectItem value="Москва">Москва</SelectItem>
+                        <SelectItem value="Санкт-Петербург">Санкт-Петербург</SelectItem>
+                        <SelectItem value="Новосибирск">Новосибирск</SelectItem>
+                        <SelectItem value="Екатеринбург">Екатеринбург</SelectItem>
+                        <SelectItem value="Казань">Казань</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -288,71 +300,72 @@ export default function SearchPage() {
           )}
 
           <div className="flex-1">
-            {filteredApartments.length === 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : filteredListings.length === 0 ? (
               <Card className="p-12 text-center">
-                <Search className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="mb-2 text-lg font-semibold">Ничего не найдено</h3>
-                <p className="text-muted-foreground">Попробуйте изменить параметры поиска</p>
+                <HomeIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-semibold">Объявлений пока нет</h3>
+                <p className="text-muted-foreground">
+                  Попробуйте изменить параметры поиска или создайте первое объявление
+                </p>
               </Card>
             ) : (
               <div className={viewMode === 'grid' ? 'grid gap-6 sm:grid-cols-2 xl:grid-cols-3' : 'space-y-4'}>
-                {filteredApartments.map((apartment) => (
+                {filteredListings.map((listing) => (
                   <Card
-                    key={apartment.id}
+                    key={listing.id}
                     className={`group overflow-hidden transition-all hover:shadow-lg ${viewMode === 'list' ? 'flex flex-col md:flex-row' : ''}`}
-                    data-testid={`card-apartment-${apartment.id}`}
+                    data-testid={`card-listing-${listing.id}`}
                   >
                     <div className={`relative overflow-hidden ${viewMode === 'list' ? 'aspect-video md:aspect-square md:w-64' : 'aspect-[4/3]'}`}>
                       <img
-                        src={apartment.image}
-                        alt={apartment.title}
+                        src={listing.images[0] || defaultImage}
+                        alt={listing.title}
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                       <button
                         className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-muted-foreground transition-colors hover:bg-white hover:text-rose-500"
-                        data-testid={`button-favorite-${apartment.id}`}
+                        data-testid={`button-favorite-${listing.id}`}
                       >
                         <Heart className="h-4 w-4" />
                       </button>
                       <div className="absolute left-3 top-3 flex flex-wrap gap-1">
-                        {apartment.badges.map((badge, i) => (
-                          <Badge
-                            key={i}
-                            variant={badge === 'Проверено' ? 'default' : 'secondary'}
-                            className="text-xs"
-                          >
-                            {badge}
-                          </Badge>
-                        ))}
+                        <Badge variant="secondary" className="text-xs">
+                          {propertyTypeLabels[listing.propertyType] || listing.propertyType}
+                        </Badge>
+                        <Badge variant="default" className="text-xs">
+                          {dealTypeLabels[listing.dealType] || listing.dealType}
+                        </Badge>
                       </div>
                     </div>
                     <CardContent className={`flex-1 p-4 ${viewMode === 'list' ? 'flex flex-col justify-between' : ''}`}>
                       <div>
                         <div className="mb-2 text-xl font-bold text-primary">
-                          {apartment.priceFormatted} ₽
+                          {formatFullPrice(listing.price, listing.currency)}
                         </div>
-                        <h3 className="mb-1 font-semibold line-clamp-1">{apartment.title}</h3>
+                        <h3 className="mb-1 font-semibold line-clamp-1">{listing.title}</h3>
                         <div className="mb-3 flex items-center gap-1 text-sm text-muted-foreground">
                           <MapPin className="h-3 w-3" />
-                          <span className="line-clamp-1">{apartment.address}</span>
+                          <span className="line-clamp-1">{listing.city}, {listing.address}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Bed className="h-4 w-4" />
-                          <span>{apartment.bedrooms}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Bath className="h-4 w-4" />
-                          <span>{apartment.bathrooms}</span>
+                          <span>{listing.rooms} комн.</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Square className="h-4 w-4" />
-                          <span>{apartment.area} м²</span>
+                          <span>{listing.area} м²</span>
                         </div>
-                        <div className="text-xs">
-                          {apartment.floor}/{apartment.totalFloors} эт.
-                        </div>
+                        {listing.floor && listing.totalFloors && (
+                          <div className="text-xs">
+                            {listing.floor}/{listing.totalFloors} эт.
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

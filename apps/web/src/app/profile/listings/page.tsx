@@ -173,6 +173,10 @@ export default function MyListingsPage() {
         metroStation: '',
       });
     },
+    onError: (error) => {
+      console.error('Failed to create listing:', error);
+      alert('Ошибка при создании объявления: ' + (error instanceof Error ? error.message : 'Неизвестная ошибка'));
+    },
   });
 
   const publishMutation = useMutation({
