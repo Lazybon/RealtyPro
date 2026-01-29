@@ -9,12 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Header } from "@/components/header";
 import {
   Building2,
   Search,
-  Briefcase,
-  MessageCircle,
-  User,
   Send,
   MoreVertical,
   Phone,
@@ -23,9 +21,10 @@ import {
   Smile,
   ArrowLeft,
   Headphones,
-  Home,
   CheckCheck,
   Loader2,
+  MessageCircle,
+  Home,
 } from "lucide-react";
 
 interface Chat {
@@ -179,33 +178,7 @@ export default function MessagesPage() {
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2" data-testid="link-logo">
-            <Building2 className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">RealtyPro</span>
-          </Link>
-          
-          <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/search" className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" data-testid="link-search">
-              <Search className="h-4 w-4" />
-              Поиск
-            </Link>
-            <Link href="/services" className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" data-testid="link-services">
-              <Briefcase className="h-4 w-4" />
-              Сервисы
-            </Link>
-            <Link href="/messages" className="flex items-center gap-2 text-sm font-medium text-foreground" data-testid="link-messages">
-              <MessageCircle className="h-4 w-4" />
-              Сообщения
-            </Link>
-            <Link href="/profile" className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" data-testid="link-profile">
-              <User className="h-4 w-4" />
-              Профиль
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <div className="flex flex-1 overflow-hidden">
         <div className={`w-full border-r md:w-80 lg:w-96 ${isMobileView ? 'hidden md:flex' : 'flex'} flex-col`}>

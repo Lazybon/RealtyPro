@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/theme-toggle';
+import { Header } from '@/components/header';
 import {
   Home as HomeIcon,
   Shield,
@@ -105,38 +105,9 @@ const stats = [
 ];
 
 export default function ServicesPage() {
-
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto flex items-center justify-between gap-4 px-4 py-3">
-          <Link href="/" className="flex items-center gap-2" data-testid="link-logo">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <HomeIcon className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold">RealtyPro</span>
-          </Link>
-
-          <nav className="hidden items-center gap-8 md:flex">
-            <Link href="/" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" data-testid="link-home">
-              Главная
-            </Link>
-            <Link href="/search" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" data-testid="link-search">
-              Поиск
-            </Link>
-            <Link href="/services" className="text-sm font-medium text-foreground" data-testid="link-services">
-              Сервисы
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <Button variant="outline" asChild data-testid="button-login">
-              <Link href="/login">Войти</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main>
         <section className="border-b bg-muted/30 py-16 md:py-24">

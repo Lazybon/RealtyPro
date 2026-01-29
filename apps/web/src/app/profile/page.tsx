@@ -6,13 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Header } from "@/components/header";
 import {
-  Home,
   Search,
-  Briefcase,
   MessageCircle,
-  User,
-  LogOut,
   Settings,
   Shield,
   FileText,
@@ -69,40 +66,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2" data-testid="link-logo">
-            <Building2 className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">RealtyPro</span>
-          </Link>
-          
-          <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/search" className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" data-testid="link-search">
-              <Search className="h-4 w-4" />
-              Поиск
-            </Link>
-            <Link href="/services" className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" data-testid="link-services">
-              <Briefcase className="h-4 w-4" />
-              Сервисы
-            </Link>
-            <Link href="/messages" className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" data-testid="link-messages">
-              <MessageCircle className="h-4 w-4" />
-              Сообщения
-            </Link>
-            <Link href="/profile" className="flex items-center gap-2 text-sm font-medium text-foreground" data-testid="link-profile">
-              <User className="h-4 w-4" />
-              Профиль
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => logout()} data-testid="button-logout">
-              <LogOut className="mr-2 h-4 w-4" />
-              Выйти
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid gap-8 lg:grid-cols-3">
