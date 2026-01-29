@@ -118,6 +118,7 @@ builder.mutationField('updateUser', (t) =>
         data: {
           ...(args.input.firstName !== undefined && { firstName: args.input.firstName }),
           ...(args.input.lastName !== undefined && { lastName: args.input.lastName }),
+          ...(args.input.phone !== undefined && { phone: args.input.phone }),
           ...(args.input.profileImageUrl !== undefined && { profileImageUrl: args.input.profileImageUrl }),
         },
       });
@@ -136,6 +137,48 @@ builder.mutationField('deleteUser', (t) =>
       return ctx.prisma.user.delete({
         where: { id: String(args.id) },
       });
+    },
+  })
+);
+
+builder.mutationField('changePassword', (t) =>
+  t.field({
+    type: 'Boolean',
+    args: {
+      currentPassword: t.arg.string({ required: true }),
+      newPassword: t.arg.string({ required: true }),
+    },
+    resolve: async (_parent, args, ctx) => {
+      if (!ctx.userId) {
+        throw new Error('Необходима авторизация');
+      }
+      
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: ctx.userId },
+      });
+      
+      if (!user) {
+        throw new Error('Пользователь не найден');
+      }
+      
+      const validPassword = await bcrypt.compare(args.currentPassword, (user as any).password);
+      
+      if (!validPassword) {
+        throw new Error('Неверный текущий пароль');
+      }
+      
+      if (args.newPassword.length < 6) {
+        throw new Error('Пароль должен содержать минимум 6 символов');
+      }
+      
+      const hashedPassword = await bcrypt.hash(args.newPassword, 10);
+      
+      await ctx.prisma.user.update({
+        where: { id: ctx.userId },
+        data: { password: hashedPassword } as any,
+      });
+      
+      return true;
     },
   })
 );

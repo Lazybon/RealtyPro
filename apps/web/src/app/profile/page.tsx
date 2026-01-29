@@ -55,13 +55,12 @@ export default function ProfilePage() {
     : user.email?.[0]?.toUpperCase() || "U";
 
   const menuItems = [
-    { icon: Heart, label: "Избранное", href: "/favorites", count: 12 },
-    { icon: Building2, label: "Мои объявления", href: "/my-listings", count: 0 },
-    { icon: FileText, label: "Мои сделки", href: "/deals", count: 2 },
-    { icon: Bell, label: "Уведомления", href: "/notifications", count: 5 },
-    { icon: CreditCard, label: "Оплаты и подписки", href: "/billing" },
-    { icon: Settings, label: "Настройки", href: "/settings" },
-    { icon: Shield, label: "Безопасность", href: "/security" },
+    { icon: Heart, label: "Избранное", href: "/profile/favorites", count: 12 },
+    { icon: Building2, label: "Мои объявления", href: "/profile/listings", count: 0 },
+    { icon: FileText, label: "Мои сделки", href: "/profile/deals", count: 2 },
+    { icon: CreditCard, label: "Оплаты и подписки", href: "/profile/billing" },
+    { icon: Settings, label: "Настройки", href: "/profile/settings" },
+    { icon: Shield, label: "Безопасность", href: "/profile/security" },
   ];
 
   return (

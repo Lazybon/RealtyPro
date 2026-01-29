@@ -6,6 +6,7 @@ export const UserType = builder.objectRef<{
   password?: string;
   firstName: string | null;
   lastName: string | null;
+  phone: string | null;
   profileImageUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -17,6 +18,7 @@ UserType.implement({
     email: t.exposeString('email', { nullable: true }),
     firstName: t.exposeString('firstName', { nullable: true }),
     lastName: t.exposeString('lastName', { nullable: true }),
+    phone: t.exposeString('phone', { nullable: true }),
     profileImageUrl: t.exposeString('profileImageUrl', { nullable: true }),
     createdAt: t.expose('createdAt', { type: 'DateTime' }),
     updatedAt: t.expose('updatedAt', { type: 'DateTime' }),
@@ -30,6 +32,7 @@ export const AuthPayloadType = builder.objectRef<{
     password?: string;
     firstName: string | null;
     lastName: string | null;
+    phone: string | null;
     profileImageUrl: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -67,6 +70,7 @@ export const UpdateUserInput = builder.inputType('UpdateUserInput', {
   fields: (t) => ({
     firstName: t.string({ required: false }),
     lastName: t.string({ required: false }),
+    phone: t.string({ required: false }),
     profileImageUrl: t.string({ required: false }),
   }),
 });

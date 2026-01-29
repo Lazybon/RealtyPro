@@ -12,12 +12,17 @@ model User {
   password        String
   firstName       String?   @map("first_name")
   lastName        String?   @map("last_name")
+  phone           String?
   profileImageUrl String?   @map("profile_image_url")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
   
   chats           ChatParticipant[]
   messages        Message[]
+  listings        Listing[]
+  favorites       Favorite[]
+  dealsAsBuyer    Deal[]    @relation("BuyerDeals")
+  dealsAsSeller   Deal[]    @relation("SellerDeals")
   
   @@map("users")
 }
@@ -71,4 +76,69 @@ model Message {
   
   @@index([chatId])
   @@map("messages")
+}
+
+model Listing {
+  id            String    @id @default(cuid())
+  userId        String    @map("user_id")
+  title         String
+  description   String?
+  propertyType  String    @map("property_type") // apartment, house, studio
+  dealType      String    @map("deal_type") // sale, rent
+  price         Float
+  currency      String    @default("RUB")
+  area          Float     // square meters
+  rooms         Int
+  floor         Int?
+  totalFloors   Int?      @map("total_floors")
+  address       String
+  city          String
+  district      String?
+  metroStation  String?   @map("metro_station")
+  images        String[]
+  published     Boolean   @default(false)
+  viewsCount    Int       @default(0) @map("views_count")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
+  
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  favorites     Favorite[]
+  deals         Deal[]
+  
+  @@index([userId])
+  @@index([city])
+  @@index([published])
+  @@map("listings")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  listingId String   @map("listing_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, listingId])
+  @@map("favorites")
+}
+
+model Deal {
+  id          String    @id @default(cuid())
+  listingId   String    @map("listing_id")
+  buyerId     String    @map("buyer_id")
+  sellerId    String    @map("seller_id")
+  status      String    @default("pending") // pending, in_progress, completed, cancelled
+  price       Float
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+  
+  listing     Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer       User      @relation("BuyerDeals", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller      User      @relation("SellerDeals", fields: [sellerId], references: [id], onDelete: Cascade)
+  
+  @@index([buyerId])
+  @@index([sellerId])
+  @@map("deals")
 }

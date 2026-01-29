@@ -14,6 +14,7 @@ import {
   User,
   LogOut,
   Building2,
+  Bell,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -93,6 +94,19 @@ export function Header() {
             <div className="h-8 w-16 animate-pulse rounded bg-muted" />
           ) : isAuthenticated ? (
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                data-testid="button-notifications"
+              >
+                <Link href="/notifications" className="relative">
+                  <Bell className="h-4 w-4" />
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground">
+                    3
+                  </span>
+                </Link>
+              </Button>
               <Link href="/profile" data-testid="link-user-avatar">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary text-primary-foreground text-xs">
