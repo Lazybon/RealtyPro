@@ -105,26 +105,32 @@ builder.mutationField('updateListing', (t) =>
       if (!listing || listing.userId !== ctx.userId) {
         throw new Error('Объявление не найдено или нет прав на редактирование');
       }
+      // Build update data, filtering out null/undefined for required fields
+      const updateData: Record<string, unknown> = {};
+      
+      // Required fields - only update if not null/undefined
+      if (args.input.title != null) updateData.title = args.input.title;
+      if (args.input.propertyType != null) updateData.propertyType = args.input.propertyType;
+      if (args.input.dealType != null) updateData.dealType = args.input.dealType;
+      if (args.input.price != null) updateData.price = args.input.price;
+      if (args.input.currency != null) updateData.currency = args.input.currency;
+      if (args.input.area != null) updateData.area = args.input.area;
+      if (args.input.rooms != null) updateData.rooms = args.input.rooms;
+      if (args.input.address != null) updateData.address = args.input.address;
+      if (args.input.city != null) updateData.city = args.input.city;
+      
+      // Nullable fields - can be set to null explicitly
+      if (args.input.description !== undefined) updateData.description = args.input.description;
+      if (args.input.floor !== undefined) updateData.floor = args.input.floor;
+      if (args.input.totalFloors !== undefined) updateData.totalFloors = args.input.totalFloors;
+      if (args.input.district !== undefined) updateData.district = args.input.district;
+      if (args.input.metroStation !== undefined) updateData.metroStation = args.input.metroStation;
+      if (args.input.images !== undefined) updateData.images = args.input.images;
+      if (args.input.published !== undefined) updateData.published = args.input.published;
+      
       return ctx.prisma.listing.update({
         where: { id: String(args.id) },
-        data: {
-          ...(args.input.title !== undefined && { title: args.input.title }),
-          ...(args.input.description !== undefined && { description: args.input.description }),
-          ...(args.input.propertyType !== undefined && { propertyType: args.input.propertyType }),
-          ...(args.input.dealType !== undefined && { dealType: args.input.dealType }),
-          ...(args.input.price !== undefined && { price: args.input.price }),
-          ...(args.input.currency !== undefined && { currency: args.input.currency }),
-          ...(args.input.area !== undefined && { area: args.input.area }),
-          ...(args.input.rooms !== undefined && { rooms: args.input.rooms }),
-          ...(args.input.floor !== undefined && { floor: args.input.floor }),
-          ...(args.input.totalFloors !== undefined && { totalFloors: args.input.totalFloors }),
-          ...(args.input.address !== undefined && { address: args.input.address }),
-          ...(args.input.city !== undefined && { city: args.input.city }),
-          ...(args.input.district !== undefined && { district: args.input.district }),
-          ...(args.input.metroStation !== undefined && { metroStation: args.input.metroStation }),
-          ...(args.input.images !== undefined && { images: args.input.images }),
-          ...(args.input.published !== undefined && { published: args.input.published }),
-        },
+        data: updateData,
       });
     },
   })
