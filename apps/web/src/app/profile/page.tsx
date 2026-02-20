@@ -12,7 +12,6 @@ import {
   Settings,
   Shield,
   FileText,
-  Bell,
   CreditCard,
   Heart,
   Building2,
@@ -22,6 +21,7 @@ import {
   Loader2,
   FolderOpen,
   Star,
+  Scale,
 } from "lucide-react";
 
 async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
@@ -104,6 +104,7 @@ export default function ProfilePage() {
     { icon: CreditCard, label: "Оплаты и подписки", href: "/profile/billing" },
     { icon: Settings, label: "Настройки", href: "/profile/settings" },
     { icon: Shield, label: "Безопасность", href: "/profile/security" },
+    { icon: Scale, label: "Правовая информация", href: "/legal/terms" },
   ];
 
   const rating = 5.0;

@@ -5,6 +5,7 @@ import { ApolloWrapper } from '@/lib/apollo-wrapper';
 import { ThemeProvider } from '@/components/theme-provider';
 import { QueryProvider } from '@/lib/query-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { Footer } from '@/components/footer';
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -36,7 +37,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryProvider>
-            <ApolloWrapper>{children}</ApolloWrapper>
+            <ApolloWrapper>
+              <div className="flex min-h-screen flex-col">
+                <div className="flex-1">{children}</div>
+                <Footer />
+              </div>
+            </ApolloWrapper>
           </QueryProvider>
           <Toaster />
         </ThemeProvider>
