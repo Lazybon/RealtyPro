@@ -7,9 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Header } from "@/components/header";
+import { useQuery } from "@tanstack/react-query";
 import {
-  Search,
-  MessageCircle,
   Settings,
   Shield,
   FileText,
@@ -21,10 +20,53 @@ import {
   Mail,
   Calendar,
   Loader2,
+  FolderOpen,
+  Star,
 } from "lucide-react";
+
+async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+  const res = await fetch("/api/graphql", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ query, variables }),
+  });
+  const json = await res.json();
+  if (json.errors) throw new Error(json.errors[0].message);
+  return json.data;
+}
+
+const PROFILE_STATS_QUERY = `
+  query ProfileStats {
+    favoriteListings {
+      id
+    }
+    myDeals {
+      id
+    }
+    myListings {
+      id
+    }
+  }
+`;
 
 export default function ProfilePage() {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
+
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ['profileStats'],
+    queryFn: () => graphqlRequest<{
+      favoriteListings: { id: string }[];
+      myDeals: { id: string }[];
+      myListings: { id: string }[];
+    }>(PROFILE_STATS_QUERY),
+    enabled: isAuthenticated,
+    retry: 1,
+  });
+
+  const favoritesCount = stats?.favoriteListings?.length ?? 0;
+  const dealsCount = stats?.myDeals?.length ?? 0;
+  const listingsCount = stats?.myListings?.length ?? 0;
 
   if (isLoading) {
     return (
@@ -55,13 +97,16 @@ export default function ProfilePage() {
     : user.email?.[0]?.toUpperCase() || "U";
 
   const menuItems = [
-    { icon: Heart, label: "Избранное", href: "/profile/favorites", count: 12 },
-    { icon: Building2, label: "Мои объявления", href: "/profile/listings", count: 0 },
-    { icon: FileText, label: "Мои сделки", href: "/profile/deals", count: 2 },
+    { icon: Heart, label: "Избранное", href: "/profile/favorites", count: favoritesCount },
+    { icon: Building2, label: "Мои объявления", href: "/profile/listings", count: listingsCount },
+    { icon: FileText, label: "Мои сделки", href: "/profile/deals", count: dealsCount },
+    { icon: FolderOpen, label: "Мои документы", href: "/profile/documents" },
     { icon: CreditCard, label: "Оплаты и подписки", href: "/profile/billing" },
     { icon: Settings, label: "Настройки", href: "/profile/settings" },
     { icon: Shield, label: "Безопасность", href: "/profile/security" },
   ];
+
+  const rating = 5.0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,7 +129,7 @@ export default function ProfilePage() {
                       {user.email}
                     </p>
                   )}
-                  <Badge variant="secondary" className="mt-3">
+                  <Badge variant="secondary" className="mt-3" data-testid="badge-verified">
                     <Shield className="mr-1 h-3 w-3" />
                     Верифицирован
                   </Badge>
@@ -92,16 +137,23 @@ export default function ProfilePage() {
 
                 <div className="mt-6 grid grid-cols-3 gap-4 border-t pt-6">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">12</div>
-                    <div className="text-xs text-muted-foreground">Избранных</div>
+                    <div className="text-2xl font-bold text-primary" data-testid="text-favorites-count">
+                      {statsLoading ? "–" : favoritesCount}
+                    </div>
+                    <div className="text-xs text-muted-foreground" data-testid="label-favorites">Избранных</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">2</div>
-                    <div className="text-xs text-muted-foreground">Сделок</div>
+                    <div className="text-2xl font-bold text-primary" data-testid="text-deals-count">
+                      {statsLoading ? "–" : dealsCount}
+                    </div>
+                    <div className="text-xs text-muted-foreground" data-testid="label-deals">Сделок</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">4.9</div>
-                    <div className="text-xs text-muted-foreground">Рейтинг</div>
+                    <div className="flex items-center justify-center gap-1">
+                      <div className="text-2xl font-bold text-primary" data-testid="text-rating">{rating}</div>
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    </div>
+                    <div className="text-xs text-muted-foreground" data-testid="label-rating">Рейтинг</div>
                   </div>
                 </div>
 
@@ -141,26 +193,6 @@ export default function ProfilePage() {
                     </div>
                   </Link>
                 ))}
-              </CardContent>
-            </Card>
-
-            <Card className="mt-6" data-testid="card-quick-actions">
-              <CardHeader>
-                <CardTitle>Быстрые действия</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-4 sm:grid-cols-2">
-                <Button asChild className="h-auto flex-col gap-2 py-6">
-                  <Link href="/search">
-                    <Search className="h-6 w-6" />
-                    <span>Найти квартиру</span>
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="h-auto flex-col gap-2 py-6">
-                  <Link href="/messages">
-                    <MessageCircle className="h-6 w-6" />
-                    <span>Мои чаты</span>
-                  </Link>
-                </Button>
               </CardContent>
             </Card>
           </div>
