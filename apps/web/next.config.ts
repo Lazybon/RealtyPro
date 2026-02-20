@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
     '127.0.0.1',
     '*.replit.dev',
     '*.worf.replit.dev',
+    '*.picard.replit.dev',
+    '*.kirk.replit.dev',
   ],
   experimental: {
     serverActions: {
