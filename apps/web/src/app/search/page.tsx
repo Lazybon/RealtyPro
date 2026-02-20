@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -487,8 +488,8 @@ export default function SearchPage() {
             ) : (
               <div className={viewMode === 'grid' ? 'grid gap-6 sm:grid-cols-2 xl:grid-cols-3' : 'space-y-4'}>
                 {filteredListings.map((listing) => (
+                  <Link key={listing.id} href={`/listing/${listing.id}`} className="block" data-testid={`link-listing-${listing.id}`}>
                   <Card
-                    key={listing.id}
                     className={`group overflow-hidden transition-all hover:shadow-lg ${viewMode === 'list' ? 'flex flex-col md:flex-row' : ''}`}
                     data-testid={`card-listing-${listing.id}`}
                   >
@@ -541,6 +542,7 @@ export default function SearchPage() {
                       </div>
                     </CardContent>
                   </Card>
+                  </Link>
                 ))}
               </div>
             )}
