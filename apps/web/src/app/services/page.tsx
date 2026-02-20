@@ -190,12 +190,19 @@ export default function ServicesPage() {
 
                     <div className="flex items-center justify-between border-t pt-4">
                       <div className="text-lg font-bold text-primary">{service.price}</div>
-                      <Button asChild data-testid={`button-try-${service.id}`}>
-                        <Link href={service.id === 'mortgage' ? '/mortgage' : '/login'}>
+                      {service.id === 'mortgage' ? (
+                        <Button asChild data-testid={`button-try-${service.id}`}>
+                          <Link href="/mortgage">
+                            Попробовать
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button disabled data-testid={`button-try-${service.id}`}>
                           Попробовать
                           <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                      </Button>
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
