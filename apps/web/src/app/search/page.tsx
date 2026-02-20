@@ -871,7 +871,33 @@ export default function SearchPage() {
               <Button variant="outline" className="flex-1" onClick={resetAdvancedFilters} data-testid="button-adv-reset">
                 Сбросить фильтры
               </Button>
-              <Button className="flex-1" onClick={() => setShowAdvancedFilters(false)} data-testid="button-adv-apply">
+              <Button className="flex-1" onClick={() => {
+                if (advGoal === 'buy') setDealType('sale');
+                else if (advGoal === 'rent') setDealType('rent');
+
+                if (advRooms.length === 1) {
+                  const r = advRooms[0];
+                  if (r === 'Студия') setRooms('any');
+                  else if (r === '5+') setRooms('4');
+                  else setRooms(r);
+                }
+
+                if (advPriceFrom || advPriceTo) {
+                  setPriceRange([
+                    advPriceFrom ? Number(advPriceFrom) : 1000000,
+                    advPriceTo ? Number(advPriceTo) : 100000000,
+                  ]);
+                }
+
+                if (advAreaFrom || advAreaTo) {
+                  setAreaRange([
+                    advAreaFrom ? Number(advAreaFrom) : 10,
+                    advAreaTo ? Number(advAreaTo) : 300,
+                  ]);
+                }
+
+                setShowAdvancedFilters(false);
+              }} data-testid="button-adv-apply">
                 Показать {filteredListings.length} предложений
               </Button>
             </div>
