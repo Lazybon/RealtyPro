@@ -231,7 +231,8 @@ export default function SearchPage() {
   const filteredListings = listings.filter((listing) => {
     if (listing.price < priceRange[0] || listing.price > priceRange[1]) return false;
     if (listing.area < areaRange[0] || listing.area > areaRange[1]) return false;
-    if (rooms !== 'any' && listing.rooms !== parseInt(rooms)) return false;
+    if (rooms === 'studio' && listing.rooms !== 0 && listing.propertyType !== 'studio') return false;
+    if (rooms !== 'any' && rooms !== 'studio' && listing.rooms !== parseInt(rooms)) return false;
     if (city !== 'any' && listing.city !== city) return false;
     if (dealType !== 'any' && listing.dealType !== dealType) return false;
     if (searchQuery.trim()) {
@@ -425,6 +426,7 @@ export default function SearchPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="any">Любое</SelectItem>
+                        <SelectItem value="studio">Студия</SelectItem>
                         <SelectItem value="1">1 комната</SelectItem>
                         <SelectItem value="2">2 комнаты</SelectItem>
                         <SelectItem value="3">3 комнаты</SelectItem>
