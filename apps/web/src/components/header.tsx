@@ -15,7 +15,6 @@ import {
   LogOut,
   Building2,
   Bell,
-  Calculator,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -50,7 +49,6 @@ export function Header() {
     { href: '/', icon: HomeIcon, label: 'Главная' },
     { href: '/search', icon: Search, label: 'Поиск' },
     { href: '/services', icon: Briefcase, label: 'Сервисы' },
-    { href: '/mortgage', icon: Calculator, label: 'Ипотека' },
   ];
 
   const authNavItems = [
