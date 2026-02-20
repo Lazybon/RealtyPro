@@ -108,6 +108,16 @@ export default function ProfilePage() {
 
   const rating = 5.0;
 
+  const formatRegistrationDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return "недавно";
+    const date = new Date(dateStr);
+    const months = [
+      "января", "февраля", "марта", "апреля", "мая", "июня",
+      "июля", "августа", "сентября", "октября", "ноября", "декабря"
+    ];
+    return `${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -157,9 +167,9 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="mt-6 flex items-center justify-center gap-1 text-sm text-muted-foreground">
+                <div className="mt-6 flex items-center justify-center gap-1 text-sm text-muted-foreground" data-testid="text-registration-date">
                   <Calendar className="h-4 w-4" />
-                  На платформе с января 2024
+                  На платформе с {formatRegistrationDate(user.createdAt)}
                 </div>
               </CardContent>
             </Card>

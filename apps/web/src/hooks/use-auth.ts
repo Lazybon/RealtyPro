@@ -8,6 +8,7 @@ export interface User {
   firstName?: string | null;
   lastName?: string | null;
   profileImageUrl?: string | null;
+  createdAt?: string | null;
 }
 
 async function fetchUser(): Promise<User | null> {

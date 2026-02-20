@@ -34,12 +34,32 @@ export async function getCurrentUser() {
   if (!session.userId || !session.claims || !session.accessToken) {
     return null;
   }
-  
+
+  let createdAt: string | null = null;
+  try {
+    const graphqlUrl = process.env.INTERNAL_GRAPHQL_URL || "http://localhost:4000/graphql";
+    const res = await fetch(graphqlUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": session.userId,
+      },
+      body: JSON.stringify({
+        query: `query { me { createdAt } }`,
+      }),
+    });
+    const json = await res.json();
+    if (json.data?.me?.createdAt) {
+      createdAt = json.data.me.createdAt;
+    }
+  } catch {}
+
   return {
     id: session.userId,
     email: session.claims?.email,
     firstName: session.claims?.first_name,
     lastName: session.claims?.last_name,
     profileImageUrl: session.claims?.profile_image_url,
+    createdAt,
   };
 }
