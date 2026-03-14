@@ -177,6 +177,39 @@ npm run dev
 - Аватар и кнопка выхода для авторизованных
 - Кнопка "Войти" для неавторизованных
 
+## Shared Frontend Utilities (apps/web/src/lib/)
+
+- `graphql.ts` - Centralized GraphQL request helper (used by all pages)
+- `types.ts` - Shared TypeScript interfaces (`Listing`, `ListingWithUser`)
+- `format.ts` - Price/date formatting utilities (`formatPrice`, `formatShortPrice`, `formatPricePerSqm`, `formatDate`)
+- `constants.ts` - Shared constants (`DEFAULT_IMAGE`, `propertyTypeLabels`, `dealTypeLabels`)
+
+## Component Architecture (apps/web/src/components/)
+
+Page components are decomposed into focused, reusable sub-components:
+
+### Search (`components/search/`)
+- `search-filters-panel.tsx` - Sidebar filter controls
+- `search-listing-card.tsx` - Listing card (grid/list variants)
+- `advanced-filters-dialog.tsx` - Full advanced filters dialog
+- `toggle-chip.tsx`, `collapsible-section.tsx`, `filter-row.tsx` - Small UI primitives
+
+### Listing Detail (`components/listing/`)
+- `image-gallery.tsx` - Image gallery with navigation and thumbnails
+- `property-characteristics.tsx` - Property info grid
+- `price-action-panel.tsx` - Price display, favorites, buy/rent/mortgage actions, seller info
+- `buy-dialog.tsx`, `mortgage-dialog.tsx` - Action confirmation dialogs
+
+### Profile (`components/profile/`)
+- `listing-management-card.tsx` - Listing card with publish/edit/delete controls
+- `create-listing-dialog.tsx` - Create listing form dialog
+
+### Home (`components/home/`)
+- `hero-section.tsx` - Hero banner with CTA
+- `featured-listings.tsx` - Popular listings grid
+- `services-section.tsx` - Services grid + security steps
+- `stats-section.tsx` - Stats, advantages, testimonials, CTA sections
+
 ## Особенности
 
 1. **Monorepo с Turborepo** - высокопроизводительная система сборки с кешированием

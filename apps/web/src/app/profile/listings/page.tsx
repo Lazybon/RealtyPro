@@ -4,61 +4,87 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { Header } from "@/components/header";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  Plus,
-  Building2,
-  Loader2,
-  Pencil,
-  Trash2,
-  Eye,
-  EyeOff,
-  MapPin,
-  Bed,
-  Square,
-} from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { graphqlRequest } from "@/lib/graphql-client";
-import {
-  MY_LISTINGS_QUERY,
-  CREATE_LISTING_MUTATION,
-  PUBLISH_LISTING_MUTATION,
-  DELETE_LISTING_MUTATION,
-} from "@/lib/graphql-operations";
-import type { Listing } from "@/types/domain";
+import { ArrowLeft, Plus, Building2, Loader2 } from "lucide-react";
+import { graphqlRequest } from "@/lib/graphql";
+import type { Listing } from "@/lib/types";
+import { ListingManagementCard } from "@/components/profile/listing-management-card";
+import { CreateListingDialog } from "@/components/profile/create-listing-dialog";
+
+const MY_LISTINGS_QUERY = `
+  query MyListings {
+    myListings {
+      id
+      title
+      description
+      propertyType
+      dealType
+      price
+      currency
+      area
+      rooms
+      floor
+      totalFloors
+      address
+      city
+      district
+      metroStation
+      images
+      published
+      viewsCount
+      createdAt
+    }
+  }
+`;
+
+const CREATE_LISTING_MUTATION = `
+  mutation CreateListing($input: CreateListingInput!) {
+    createListing(input: $input) {
+      id
+      title
+    }
+  }
+`;
+
+const PUBLISH_LISTING_MUTATION = `
+  mutation PublishListing($id: ID!, $published: Boolean!) {
+    publishListing(id: $id, published: $published) {
+      id
+      published
+    }
+  }
+`;
+
+const DELETE_LISTING_MUTATION = `
+  mutation DeleteListing($id: ID!) {
+    deleteListing(id: $id) {
+      id
+    }
+  }
+`;
+
+const INITIAL_FORM_DATA = {
+  title: '',
+  description: '',
+  propertyType: 'apartment',
+  dealType: 'sale',
+  price: '',
+  area: '',
+  rooms: '1',
+  floor: '',
+  totalFloors: '',
+  address: '',
+  city: 'Москва',
+  district: '',
+  metroStation: '',
+};
 
 export default function MyListingsPage() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    propertyType: 'apartment',
-    dealType: 'sale',
-    price: '',
-    area: '',
-    rooms: '1',
-    floor: '',
-    totalFloors: '',
-    address: '',
-    city: 'Москва',
-    district: '',
-    metroStation: '',
-  });
+  const [formData, setFormData] = useState({ ...INITIAL_FORM_DATA });
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['myListings'],
@@ -71,21 +97,7 @@ export default function MyListingsPage() {
     onSuccess: () => {
       refetch();
       setIsDialogOpen(false);
-      setFormData({
-        title: '',
-        description: '',
-        propertyType: 'apartment',
-        dealType: 'sale',
-        price: '',
-        area: '',
-        rooms: '1',
-        floor: '',
-        totalFloors: '',
-        address: '',
-        city: 'Москва',
-        district: '',
-        metroStation: '',
-      });
+      setFormData({ ...INITIAL_FORM_DATA });
     },
     onError: (error) => {
       console.error('Failed to create listing:', error);
@@ -145,25 +157,6 @@ export default function MyListingsPage() {
 
   const listings = data?.myListings || [];
 
-  const propertyTypeLabels: Record<string, string> = {
-    apartment: 'Квартира',
-    house: 'Дом',
-    studio: 'Студия',
-  };
-
-  const dealTypeLabels: Record<string, string> = {
-    sale: 'Продажа',
-    rent: 'Аренда',
-  };
-
-  const formatPrice = (price: number, currency: string) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: currency,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-8">
@@ -180,227 +173,14 @@ export default function MyListingsPage() {
         </div>
 
         <div className="mb-6 flex justify-end">
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button data-testid="button-create-listing">
-                <Plus className="mr-2 h-4 w-4" />
-                Добавить объявление
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Новое объявление</DialogTitle>
-                <DialogDescription>
-                  Заполните информацию о недвижимости
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Заголовок *</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Например: 2-комнатная квартира в центре"
-                    required
-                    data-testid="input-title"
-                  />
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="propertyType">Тип недвижимости</Label>
-                    <Select
-                      value={formData.propertyType}
-                      onValueChange={(value) => setFormData({ ...formData, propertyType: value })}
-                    >
-                      <SelectTrigger data-testid="select-property-type">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="apartment">Квартира</SelectItem>
-                        <SelectItem value="house">Дом</SelectItem>
-                        <SelectItem value="studio">Студия</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="dealType">Тип сделки</Label>
-                    <Select
-                      value={formData.dealType}
-                      onValueChange={(value) => setFormData({ ...formData, dealType: value })}
-                    >
-                      <SelectTrigger data-testid="select-deal-type">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sale">Продажа</SelectItem>
-                        <SelectItem value="rent">Аренда</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="price">Цена (₽) *</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      placeholder="5000000"
-                      required
-                      data-testid="input-price"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="area">Площадь (м²) *</Label>
-                    <Input
-                      id="area"
-                      type="number"
-                      step="0.1"
-                      value={formData.area}
-                      onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                      placeholder="45"
-                      required
-                      data-testid="input-area"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="rooms">Комнат *</Label>
-                    <Select
-                      value={formData.rooms}
-                      onValueChange={(value) => setFormData({ ...formData, rooms: value })}
-                    >
-                      <SelectTrigger data-testid="select-rooms">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1</SelectItem>
-                        <SelectItem value="2">2</SelectItem>
-                        <SelectItem value="3">3</SelectItem>
-                        <SelectItem value="4">4</SelectItem>
-                        <SelectItem value="5">5+</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="floor">Этаж</Label>
-                    <Input
-                      id="floor"
-                      type="number"
-                      value={formData.floor}
-                      onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
-                      placeholder="5"
-                      data-testid="input-floor"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="totalFloors">Всего этажей</Label>
-                    <Input
-                      id="totalFloors"
-                      type="number"
-                      value={formData.totalFloors}
-                      onChange={(e) => setFormData({ ...formData, totalFloors: e.target.value })}
-                      placeholder="12"
-                      data-testid="input-total-floors"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="city">Город *</Label>
-                  <Select
-                    value={formData.city}
-                    onValueChange={(value) => setFormData({ ...formData, city: value })}
-                  >
-                    <SelectTrigger data-testid="select-city">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Москва">Москва</SelectItem>
-                      <SelectItem value="Санкт-Петербург">Санкт-Петербург</SelectItem>
-                      <SelectItem value="Новосибирск">Новосибирск</SelectItem>
-                      <SelectItem value="Екатеринбург">Екатеринбург</SelectItem>
-                      <SelectItem value="Казань">Казань</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="address">Адрес *</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    placeholder="ул. Тверская, д. 10"
-                    required
-                    data-testid="input-address"
-                  />
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="district">Район</Label>
-                    <Input
-                      id="district"
-                      value={formData.district}
-                      onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                      placeholder="Центральный"
-                      data-testid="input-district"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="metroStation">Метро</Label>
-                    <Input
-                      id="metroStation"
-                      value={formData.metroStation}
-                      onChange={(e) => setFormData({ ...formData, metroStation: e.target.value })}
-                      placeholder="Тверская"
-                      data-testid="input-metro"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Описание</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Опишите преимущества вашей недвижимости..."
-                    rows={4}
-                    data-testid="input-description"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                    data-testid="button-cancel"
-                  >
-                    Отмена
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={createMutation.isPending}
-                    data-testid="button-submit"
-                  >
-                    {createMutation.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : null}
-                    Создать
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <CreateListingDialog
+            open={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            formData={formData}
+            onFormDataChange={setFormData}
+            onSubmit={handleSubmit}
+            isPending={createMutation.isPending}
+          />
         </div>
 
         {isLoading ? (
@@ -424,94 +204,14 @@ export default function MyListingsPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {listings.map((listing) => (
-              <Card key={listing.id} data-testid={`card-listing-${listing.id}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg line-clamp-1">{listing.title}</CardTitle>
-                      <CardDescription className="mt-1 flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {listing.city}, {listing.address}
-                      </CardDescription>
-                    </div>
-                    <Badge variant={listing.published ? "default" : "secondary"}>
-                      {listing.published ? "Опубликовано" : "Черновик"}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <div className="text-2xl font-bold text-primary">
-                      {formatPrice(listing.price, listing.currency)}
-                    </div>
-                    <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Bed className="h-4 w-4" />
-                        {listing.rooms} комн.
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Square className="h-4 w-4" />
-                        {listing.area} м²
-                      </span>
-                      {listing.floor && listing.totalFloors && (
-                        <span>{listing.floor}/{listing.totalFloors} эт.</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-                    <Badge variant="outline">{propertyTypeLabels[listing.propertyType]}</Badge>
-                    <Badge variant="outline">{dealTypeLabels[listing.dealType]}</Badge>
-                    <span className="flex items-center gap-1">
-                      <Eye className="h-3 w-3" />
-                      {listing.viewsCount}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => publishMutation.mutate({
-                        id: listing.id,
-                        published: !listing.published,
-                      })}
-                      disabled={publishMutation.isPending}
-                      data-testid={`button-toggle-publish-${listing.id}`}
-                    >
-                      {listing.published ? (
-                        <>
-                          <EyeOff className="mr-1 h-3 w-3" />
-                          Скрыть
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="mr-1 h-3 w-3" />
-                          Опубликовать
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      data-testid={`button-edit-${listing.id}`}
-                    >
-                      <Pencil className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        if (confirm('Удалить объявление?')) {
-                          deleteMutation.mutate(listing.id);
-                        }
-                      }}
-                      disabled={deleteMutation.isPending}
-                      data-testid={`button-delete-${listing.id}`}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <ListingManagementCard
+                key={listing.id}
+                listing={listing}
+                onTogglePublish={(id, published) => publishMutation.mutate({ id, published })}
+                onDelete={(id) => deleteMutation.mutate(id)}
+                isPublishing={publishMutation.isPending}
+                isDeleting={deleteMutation.isPending}
+              />
             ))}
           </div>
         )}
