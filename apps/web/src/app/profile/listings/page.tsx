@@ -10,9 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Header } from "@/components/header";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/query-client";
 import {
   ArrowLeft,
   Plus,
@@ -34,98 +32,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-interface Listing {
-  id: string;
-  title: string;
-  description: string | null;
-  propertyType: string;
-  dealType: string;
-  price: number;
-  currency: string;
-  area: number;
-  rooms: number;
-  floor: number | null;
-  totalFloors: number | null;
-  address: string;
-  city: string;
-  district: string | null;
-  metroStation: string | null;
-  images: string[];
-  published: boolean;
-  viewsCount: number;
-  createdAt: string;
-}
-
-const GRAPHQL_URL = typeof window !== 'undefined' 
-  ? '/api/graphql' 
-  : process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:4000/graphql';
-
-async function graphqlRequest<T>(query: string, variables?: Record<string, any>): Promise<T> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ query, variables }),
-  });
-  const json = await res.json();
-  if (json.errors) {
-    throw new Error(json.errors[0]?.message || 'GraphQL Error');
-  }
-  return json.data;
-}
-
-const MY_LISTINGS_QUERY = `
-  query MyListings {
-    myListings {
-      id
-      title
-      description
-      propertyType
-      dealType
-      price
-      currency
-      area
-      rooms
-      floor
-      totalFloors
-      address
-      city
-      district
-      metroStation
-      images
-      published
-      viewsCount
-      createdAt
-    }
-  }
-`;
-
-const CREATE_LISTING_MUTATION = `
-  mutation CreateListing($input: CreateListingInput!) {
-    createListing(input: $input) {
-      id
-      title
-    }
-  }
-`;
-
-const PUBLISH_LISTING_MUTATION = `
-  mutation PublishListing($id: ID!, $published: Boolean!) {
-    publishListing(id: $id, published: $published) {
-      id
-      published
-    }
-  }
-`;
-
-const DELETE_LISTING_MUTATION = `
-  mutation DeleteListing($id: ID!) {
-    deleteListing(id: $id) {
-      id
-    }
-  }
-`;
+import { graphqlRequest } from "@/lib/graphql-client";
+import {
+  MY_LISTINGS_QUERY,
+  CREATE_LISTING_MUTATION,
+  PUBLISH_LISTING_MUTATION,
+  DELETE_LISTING_MUTATION,
+} from "@/lib/graphql-operations";
+import type { Listing } from "@/types/domain";
 
 export default function MyListingsPage() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -153,7 +67,7 @@ export default function MyListingsPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (input: any) => graphqlRequest(CREATE_LISTING_MUTATION, { input }),
+    mutationFn: (input: Record<string, unknown>) => graphqlRequest(CREATE_LISTING_MUTATION, { input }),
     onSuccess: () => {
       refetch();
       setIsDialogOpen(false);
@@ -252,8 +166,6 @@ export default function MyListingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6 flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>

@@ -2,7 +2,7 @@
 
 ## Overview
 Современный fullstack monorepo проект на TypeScript со следующим стеком:
-- **Frontend**: Next.js 15 с App Router, Apollo Client, Tailwind CSS, shadcn/ui
+- **Frontend**: Next.js 15 с App Router, React Query, Tailwind CSS, shadcn/ui
 - **Backend**: Apollo Server 4, Prisma ORM 7, Pothos GraphQL
 - **Infrastructure**: Turborepo, Docker для локального PostgreSQL
 
@@ -16,7 +16,7 @@
 │   ├── shared-graphql/   # Общие типы GraphQL и операции
 │   ├── config/           # Общие конфигурации
 │   └── database/         # Prisma схема и клиент
-├── server/               # Launcher для обоих приложений
+├── dev-server/           # Launcher для обоих приложений
 ├── turbo.json            # Конфигурация Turborepo
 ├── docker-compose.yml    # Docker для локального PostgreSQL
 └── package.json          # Корневой package.json
@@ -53,7 +53,7 @@ npm run dev
 
 ### Frontend (apps/web)
 - **Next.js 16** с App Router и Turbopack
-- **Apollo Client 3.12** для GraphQL запросов
+- **React Query (TanStack Query)** для GraphQL запросов и кеширования
 - **Tailwind CSS 3.4** + **shadcn/ui** компоненты
 - **React 19** с Server Components
 - **next-themes** для темной/светлой темы
@@ -124,10 +124,12 @@ npm run dev
 - `@prisma/adapter-pg` для прямого подключения
 - Конфигурация в `prisma.config.ts`
 
-### Apollo Client в Next.js
-- Использует отдельные импорты для React Turbopack совместимости
-- Настроен для SSR и клиентского рендеринга
-- Кеширование с InMemoryCache
+### Data Fetching Architecture
+- Single `graphqlRequest` utility in `apps/web/src/lib/graphql-client.ts`
+- All GraphQL operations centralized in `apps/web/src/lib/graphql-operations.ts`
+- Shared domain types in `apps/web/src/types/domain.ts`
+- Single `QueryClient` instance in `apps/web/src/lib/query-client.ts`
+- `Header` component rendered globally from `layout.tsx`
 
 ## Скрипты
 

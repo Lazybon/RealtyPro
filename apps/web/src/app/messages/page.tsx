@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Header } from "@/components/header";
 import {
   Building2,
   Search,
@@ -178,7 +177,6 @@ export default function MessagesPage() {
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      <Header />
 
       <div className="flex flex-1 overflow-hidden">
         <div className={`w-full border-r md:w-80 lg:w-96 ${isMobileView ? 'hidden md:flex' : 'flex'} flex-col`}>

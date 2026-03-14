@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Header } from '@/components/header';
 import {
   Select,
   SelectContent,
@@ -40,75 +39,9 @@ import {
   Info,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface Listing {
-  id: string;
-  title: string;
-  description: string | null;
-  propertyType: string;
-  dealType: string;
-  price: number;
-  currency: string;
-  area: number;
-  rooms: number;
-  floor: number | null;
-  totalFloors: number | null;
-  address: string;
-  city: string;
-  district: string | null;
-  metroStation: string | null;
-  images: string[];
-  published: boolean;
-  viewsCount: number;
-  createdAt: string;
-  user?: {
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-  };
-}
-
-const GRAPHQL_URL = '/api/graphql';
-
-async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ query, variables }),
-  });
-  const json = await res.json();
-  if (json.errors) {
-    throw new Error(json.errors[0]?.message || 'GraphQL Error');
-  }
-  return json.data;
-}
-
-const LISTINGS_QUERY = `
-  query Listings($published: Boolean, $city: String) {
-    listings(published: $published, city: $city) {
-      id
-      title
-      description
-      propertyType
-      dealType
-      price
-      currency
-      area
-      rooms
-      floor
-      totalFloors
-      address
-      city
-      district
-      metroStation
-      images
-      published
-      viewsCount
-      createdAt
-    }
-  }
-`;
+import { graphqlRequest } from '@/lib/graphql-client';
+import { LISTINGS_QUERY } from '@/lib/graphql-operations';
+import type { Listing } from '@/types/domain';
 
 const defaultImage = '/images/luxury_apartment_liv_8cce6e76.jpg';
 
@@ -304,8 +237,6 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>

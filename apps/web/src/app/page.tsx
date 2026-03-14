@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Header } from '@/components/header';
 import {
   Home as HomeIcon,
   Search,
@@ -148,8 +147,6 @@ const securitySteps = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       <main>
         <section className="relative overflow-hidden">
           <div 

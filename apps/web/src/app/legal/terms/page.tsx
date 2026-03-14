@@ -1,14 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Header } from "@/components/header";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="container mx-auto max-w-4xl px-4 py-8">
         <div className="mb-6 flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild data-testid="button-back">

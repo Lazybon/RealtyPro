@@ -7,40 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Header } from "@/components/header";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, Save, User, Phone, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const GRAPHQL_URL = typeof window !== 'undefined' 
-  ? '/api/graphql' 
-  : process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:4000/graphql';
-
-async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ query, variables }),
-  });
-  const json = await res.json();
-  if (json.errors) {
-    throw new Error(json.errors[0]?.message || 'GraphQL Error');
-  }
-  return json.data;
-}
-
-const UPDATE_USER_MUTATION = `
-  mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
-    updateUser(id: $id, input: $input) {
-      id
-      firstName
-      lastName
-      phone
-      profileImageUrl
-    }
-  }
-`;
+import { graphqlRequest } from "@/lib/graphql-client";
+import { UPDATE_USER_MUTATION } from "@/lib/graphql-operations";
 
 export default function SettingsPage() {
   const { user, isLoading: authLoading, isAuthenticated, refetch } = useAuth();
@@ -100,7 +71,6 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6 flex items-center gap-4">

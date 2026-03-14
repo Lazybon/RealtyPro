@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Header } from '@/components/header';
 import {
   Home as HomeIcon,
   Shield,
@@ -107,7 +106,6 @@ const stats = [
 export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       <main>
         <section className="border-b bg-muted/30 py-16 md:py-24">

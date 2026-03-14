@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Header } from "@/components/header";
 import { useQuery } from "@tanstack/react-query";
 import {
   Settings,
@@ -23,32 +22,8 @@ import {
   Star,
   Scale,
 } from "lucide-react";
-
-async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
-  const res = await fetch("/api/graphql", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ query, variables }),
-  });
-  const json = await res.json();
-  if (json.errors) throw new Error(json.errors[0].message);
-  return json.data;
-}
-
-const PROFILE_STATS_QUERY = `
-  query ProfileStats {
-    favoriteListings {
-      id
-    }
-    myDeals {
-      id
-    }
-    myListings {
-      id
-    }
-  }
-`;
+import { graphqlRequest } from "@/lib/graphql-client";
+import { PROFILE_STATS_QUERY } from "@/lib/graphql-operations";
 
 export default function ProfilePage() {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
@@ -121,7 +96,6 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid gap-8 lg:grid-cols-3">

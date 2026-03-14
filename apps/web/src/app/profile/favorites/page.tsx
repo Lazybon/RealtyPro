@@ -5,7 +5,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Header } from "@/components/header";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -16,72 +15,9 @@ import {
   Bed,
   Square,
 } from "lucide-react";
-
-interface Listing {
-  id: string;
-  title: string;
-  description: string | null;
-  propertyType: string;
-  dealType: string;
-  price: number;
-  currency: string;
-  area: number;
-  rooms: number;
-  floor: number | null;
-  totalFloors: number | null;
-  address: string;
-  city: string;
-  district: string | null;
-  images: string[];
-}
-
-const GRAPHQL_URL = typeof window !== 'undefined' 
-  ? '/api/graphql' 
-  : process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:4000/graphql';
-
-async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ query, variables }),
-  });
-  const json = await res.json();
-  if (json.errors) {
-    throw new Error(json.errors[0]?.message || 'GraphQL Error');
-  }
-  return json.data;
-}
-
-const FAVORITE_LISTINGS_QUERY = `
-  query FavoriteListings {
-    favoriteListings {
-      id
-      title
-      description
-      propertyType
-      dealType
-      price
-      currency
-      area
-      rooms
-      floor
-      totalFloors
-      address
-      city
-      district
-      images
-    }
-  }
-`;
-
-const REMOVE_FROM_FAVORITES_MUTATION = `
-  mutation RemoveFromFavorites($listingId: String!) {
-    removeFromFavorites(listingId: $listingId) {
-      id
-    }
-  }
-`;
+import { graphqlRequest } from "@/lib/graphql-client";
+import { FAVORITE_LISTINGS_QUERY, REMOVE_FAVORITE_MUTATION } from "@/lib/graphql-operations";
+import type { Listing } from "@/types/domain";
 
 export default function FavoritesPage() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -94,7 +30,7 @@ export default function FavoritesPage() {
 
   const removeMutation = useMutation({
     mutationFn: (listingId: string) =>
-      graphqlRequest(REMOVE_FROM_FAVORITES_MUTATION, { listingId }),
+      graphqlRequest(REMOVE_FAVORITE_MUTATION, { listingId }),
     onSuccess: () => refetch(),
   });
 
@@ -140,7 +76,6 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6 flex items-center gap-4">

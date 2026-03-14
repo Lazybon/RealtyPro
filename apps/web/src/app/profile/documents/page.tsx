@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Header } from "@/components/header";
 import {
   ArrowLeft,
   FolderOpen,
@@ -35,7 +34,6 @@ export default function DocumentsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6 flex items-center gap-4">

@@ -1,3 +1,12 @@
+export interface User {
+  id: string;
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  profileImageUrl?: string | null;
+  createdAt?: string | null;
+}
+
 export interface Listing {
   id: string;
   userId?: string;
@@ -53,36 +62,4 @@ export interface Deal {
     lastName: string | null;
     email: string | null;
   };
-}
-
-export interface User {
-  id: string;
-  email?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-  profileImageUrl?: string | null;
-  createdAt?: string | null;
-}
-
-export interface CreateListingInput {
-  title: string;
-  description?: string | null;
-  propertyType: string;
-  dealType: string;
-  price: number;
-  area: number;
-  rooms: number;
-  floor?: number | null;
-  totalFloors?: number | null;
-  address: string;
-  city: string;
-  district?: string | null;
-  metroStation?: string | null;
-  published?: boolean;
-}
-
-export interface UpdateUserInput {
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
 }

@@ -5,7 +5,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Header } from "@/components/header";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -16,84 +15,9 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
 } from "lucide-react";
-
-interface Deal {
-  id: string;
-  listingId: string;
-  buyerId: string;
-  sellerId: string;
-  status: string;
-  price: number;
-  createdAt: string;
-  listing: {
-    id: string;
-    title: string;
-    address: string;
-    city: string;
-  };
-  buyer: {
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string | null;
-  };
-  seller: {
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string | null;
-  };
-}
-
-const GRAPHQL_URL = typeof window !== 'undefined' 
-  ? '/api/graphql' 
-  : process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:4000/graphql';
-
-async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ query, variables }),
-  });
-  const json = await res.json();
-  if (json.errors) {
-    throw new Error(json.errors[0]?.message || 'GraphQL Error');
-  }
-  return json.data;
-}
-
-const MY_DEALS_QUERY = `
-  query MyDeals {
-    myDeals {
-      id
-      listingId
-      buyerId
-      sellerId
-      status
-      price
-      createdAt
-      listing {
-        id
-        title
-        address
-        city
-      }
-      buyer {
-        id
-        firstName
-        lastName
-        email
-      }
-      seller {
-        id
-        firstName
-        lastName
-        email
-      }
-    }
-  }
-`;
+import { graphqlRequest } from "@/lib/graphql-client";
+import { MY_DEALS_QUERY } from "@/lib/graphql-operations";
+import type { Deal } from "@/types/domain";
 
 export default function DealsPage() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -157,7 +81,6 @@ export default function DealsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6 flex items-center gap-4">

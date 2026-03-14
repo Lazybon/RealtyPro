@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Header } from '@/components/header';
 import {
   Dialog,
   DialogContent,
@@ -38,102 +37,14 @@ import {
   User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const GRAPHQL_URL = '/api/graphql';
-
-async function graphqlRequest<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ query, variables }),
-  });
-  const json = await res.json();
-  if (json.errors) {
-    throw new Error(json.errors[0]?.message || 'GraphQL Error');
-  }
-  return json.data;
-}
-
-const LISTING_QUERY = `
-  query Listing($id: ID!) {
-    listing(id: $id) {
-      id
-      userId
-      title
-      description
-      propertyType
-      dealType
-      price
-      currency
-      area
-      rooms
-      floor
-      totalFloors
-      address
-      city
-      district
-      metroStation
-      images
-      published
-      viewsCount
-      createdAt
-      user {
-        id
-        firstName
-        lastName
-        profileImageUrl
-      }
-    }
-  }
-`;
-
-const IS_FAVORITE_QUERY = `
-  query IsFavorite($listingId: String!) {
-    isFavorite(listingId: $listingId)
-  }
-`;
-
-const ADD_FAVORITE = `
-  mutation AddToFavorites($listingId: String!) {
-    addToFavorites(listingId: $listingId) { id }
-  }
-`;
-
-const REMOVE_FAVORITE = `
-  mutation RemoveFromFavorites($listingId: String!) {
-    removeFromFavorites(listingId: $listingId) { id }
-  }
-`;
-
-interface Listing {
-  id: string;
-  userId: string;
-  title: string;
-  description: string | null;
-  propertyType: string;
-  dealType: string;
-  price: number;
-  currency: string;
-  area: number;
-  rooms: number;
-  floor: number | null;
-  totalFloors: number | null;
-  address: string;
-  city: string;
-  district: string | null;
-  metroStation: string | null;
-  images: string[];
-  published: boolean;
-  viewsCount: number;
-  createdAt: string;
-  user: {
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-    profileImageUrl: string | null;
-  };
-}
+import { graphqlRequest } from '@/lib/graphql-client';
+import {
+  LISTING_QUERY,
+  IS_FAVORITE_QUERY,
+  ADD_FAVORITE_MUTATION,
+  REMOVE_FAVORITE_MUTATION,
+} from '@/lib/graphql-operations';
+import type { Listing } from '@/types/domain';
 
 const defaultImage = '/images/luxury_apartment_liv_8cce6e76.jpg';
 
@@ -172,12 +83,12 @@ export default function ListingDetailPage() {
   });
 
   const addFav = useMutation({
-    mutationFn: () => graphqlRequest(ADD_FAVORITE, { listingId }),
+    mutationFn: () => graphqlRequest(ADD_FAVORITE_MUTATION, { listingId }),
     onSuccess: () => refetchFav(),
   });
 
   const removeFav = useMutation({
-    mutationFn: () => graphqlRequest(REMOVE_FAVORITE, { listingId }),
+    mutationFn: () => graphqlRequest(REMOVE_FAVORITE_MUTATION, { listingId }),
     onSuccess: () => refetchFav(),
   });
 
@@ -233,7 +144,6 @@ export default function ListingDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="flex items-center justify-center py-32">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
@@ -244,7 +154,6 @@ export default function ListingDetailPage() {
   if (!listing) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-16 text-center">
           <Building2 className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
           <h1 className="mb-2 text-2xl font-bold">Объявление не найдено</h1>
@@ -262,8 +171,6 @@ export default function ListingDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       <main className="container mx-auto px-4 py-6">
         <div className="mb-6 flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => router.back()} data-testid="button-go-back">

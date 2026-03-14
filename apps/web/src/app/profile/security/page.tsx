@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Header } from "@/components/header";
 import { ArrowLeft, Loader2, Shield, Lock, KeyRound, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -102,7 +101,6 @@ export default function SecurityPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6 flex items-center gap-4">
