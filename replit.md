@@ -2,7 +2,7 @@
 
 ## Overview
 Современный fullstack monorepo проект на TypeScript со следующим стеком:
-- **Frontend**: Next.js 15 с App Router, React Query, Tailwind CSS, shadcn/ui
+- **Frontend**: Next.js 15 с App Router, Apollo Client, Tailwind CSS, shadcn/ui
 - **Backend**: Apollo Server 4, Prisma ORM 7, Pothos GraphQL
 - **Infrastructure**: Turborepo, Docker для локального PostgreSQL
 
@@ -10,13 +10,14 @@
 
 ```
 ├── apps/
-│   ├── web/              # Next.js 15 приложение (порт 5000)
+│   ├── web/              # Next.js 16 приложение (порт 5000) — auth-protected
+│   ├── landing/          # Next.js 15 лендинг (порт 3001) — публичный
 │   └── server/           # Apollo Server + Prisma (порт 4000)
 ├── packages/
 │   ├── shared-graphql/   # Общие типы GraphQL и операции
 │   ├── config/           # Общие конфигурации
 │   └── database/         # Prisma схема и клиент
-├── dev-server/           # Launcher для обоих приложений
+├── server/               # Launcher для всех приложений
 ├── turbo.json            # Конфигурация Turborepo
 ├── docker-compose.yml    # Docker для локального PostgreSQL
 └── package.json          # Корневой package.json
@@ -27,7 +28,8 @@
 ### Replit
 Проект автоматически запускается командой `npm run dev`, которая стартует:
 1. Apollo Server на порту 4000
-2. Next.js на порту 5000
+2. Next.js (web, auth-protected) на порту 5000
+3. Next.js (landing) на порту 3001
 
 ### Локальная разработка (с Docker)
 ```bash
@@ -53,7 +55,7 @@ npm run dev
 
 ### Frontend (apps/web)
 - **Next.js 16** с App Router и Turbopack
-- **React Query (TanStack Query)** для GraphQL запросов и кеширования
+- **Apollo Client 3.12** для GraphQL запросов
 - **Tailwind CSS 3.4** + **shadcn/ui** компоненты
 - **React 19** с Server Components
 - **next-themes** для темной/светлой темы
@@ -124,12 +126,10 @@ npm run dev
 - `@prisma/adapter-pg` для прямого подключения
 - Конфигурация в `prisma.config.ts`
 
-### Data Fetching Architecture
-- Single `graphqlRequest` utility in `apps/web/src/lib/graphql-client.ts`
-- All GraphQL operations centralized in `apps/web/src/lib/graphql-operations.ts`
-- Shared domain types in `apps/web/src/types/domain.ts`
-- Single `QueryClient` instance in `apps/web/src/lib/query-client.ts`
-- `Header` component rendered globally from `layout.tsx`
+### Apollo Client в Next.js
+- Использует отдельные импорты для React Turbopack совместимости
+- Настроен для SSR и клиентского рендеринга
+- Кеширование с InMemoryCache
 
 ## Скрипты
 
@@ -162,15 +162,26 @@ npm run dev
 
 ## Страницы RealtyPro
 
-### Публичные
-- `/` - Главная страница с маркетинговым контентом
-- `/search` - Поиск недвижимости с фильтрами
-- `/services` - Услуги платформы
+### Landing (apps/landing, порт 3001) — полностью публичный
+- `/` - Маркетинговый лендинг с hero, услугами, отзывами, статистикой
+- Все CTA-кнопки открывают модальное окно регистрации, которое перенаправляет на /register в web-приложении
 
-### Защищенные (требуют авторизации)
-- `/profile` - Личный кабинет (реальные данные: избранные, сделки, объявления, дата регистрации)
-- `/profile/documents` - Мои документы
-- `/messages` - Чаты по сделкам и поддержка
+### Web App (apps/web, порт 5000) — auth-protected
+- `/login` - Страница входа (публичная)
+- `/register` - Страница регистрации (публичная)
+- `/` - Редирект на /search
+- `/search` - Поиск недвижимости с фильтрами (защищённая)
+- `/services` - Услуги платформы (защищённая)
+- `/profile` - Личный кабинет (защищённая)
+- `/profile/documents` - Мои документы (защищённая)
+- `/messages` - Чаты по сделкам и поддержка (защищённая)
+
+### Auth Middleware
+- Next.js middleware (`apps/web/src/middleware.ts`) валидирует cookie `realtypro_session` через `unsealData` из iron-session
+- Проверяет наличие `userId` и `accessToken` в расшифрованных данных сессии
+- Публичные маршруты: `/login`, `/register`, `/api/*`, `/_next/*`, `/images/*`
+- Все остальные маршруты перенаправляют неавторизованных пользователей на `/login`
+- Fail-closed: при отсутствии `SESSION_SECRET` доступ к защищённым маршрутам блокируется
 
 ### Навигация
 - Таб "Сообщения" отображается только для авторизованных пользователей

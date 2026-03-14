@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useAuth } from '@/hooks/use-auth';
 import {
-  Home as HomeIcon,
   Search,
   Briefcase,
   MessageCircle,
@@ -46,7 +45,6 @@ export function Header() {
   const { user, isLoading, isAuthenticated, logout, isLoggingOut } = useAuth();
 
   const navItems = [
-    { href: '/', icon: HomeIcon, label: 'Главная' },
     { href: '/search', icon: Search, label: 'Поиск' },
     { href: '/services', icon: Briefcase, label: 'Сервисы' },
   ];

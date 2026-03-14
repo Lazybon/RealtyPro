@@ -37,7 +37,7 @@ export default function LoginPage() {
       }
 
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      router.push("/");
+      router.push("/search");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка входа");
     } finally {
