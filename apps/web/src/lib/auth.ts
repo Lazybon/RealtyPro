@@ -1,5 +1,6 @@
 import { getIronSession, SessionOptions, IronSession } from "iron-session";
 import { cookies } from "next/headers";
+import { getServerGraphqlUrl } from "@/lib/graphql-url";
 
 export interface SessionData {
   userId?: string;
@@ -37,7 +38,7 @@ export async function getCurrentUser() {
 
   let createdAt: string | null = null;
   try {
-    const graphqlUrl = process.env.INTERNAL_GRAPHQL_URL || "http://localhost:4000/graphql";
+    const graphqlUrl = getServerGraphqlUrl();
     const res = await fetch(graphqlUrl, {
       method: "POST",
       headers: {

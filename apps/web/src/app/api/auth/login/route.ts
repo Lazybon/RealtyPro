@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
 import { sessionOptions, SessionData } from "@/lib/auth";
-
-const GRAPHQL_URL = process.env.INTERNAL_GRAPHQL_URL || "http://localhost:4000/graphql";
+import { getServerGraphqlUrl } from "@/lib/graphql-url";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,9 +14,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const graphqlUrl = getServerGraphqlUrl();
+
     let graphqlResponse;
     try {
-      graphqlResponse = await fetch(GRAPHQL_URL, {
+      graphqlResponse = await fetch(graphqlUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
         }),
       });
     } catch (networkError) {
-      console.error("Network error during login:", networkError);
+      console.error("Network error during login:", graphqlUrl, networkError);
       return NextResponse.json(
         { error: "Не удалось подключиться к серверу авторизации" },
         { status: 503 }

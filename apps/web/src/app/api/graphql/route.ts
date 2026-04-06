@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-
-const GRAPHQL_URL = process.env.INTERNAL_GRAPHQL_URL || "http://localhost:4000/graphql";
+import { getServerGraphqlUrl } from "@/lib/graphql-url";
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +15,7 @@ export async function POST(request: NextRequest) {
       headers["x-user-id"] = session.userId;
     }
     
-    const graphqlResponse = await fetch(GRAPHQL_URL, {
+    const graphqlResponse = await fetch(getServerGraphqlUrl(), {
       method: "POST",
       headers,
       body,
