@@ -52,7 +52,9 @@ export async function getCurrentUser() {
     if (json.data?.me?.createdAt) {
       createdAt = json.data.me.createdAt;
     }
-  } catch {}
+  } catch {
+    /* ignore: optional profile freshness when API is down */
+  }
 
   return {
     id: session.userId,

@@ -96,9 +96,9 @@
     "pg": "^8.17.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "prisma": "^7.2.0",
-    "react": "^18.3.1",
+    "react": "^19.0.0",
     "react-day-picker": "^8.10.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "^19.0.0",
     "react-hook-form": "^7.55.0",
     "react-icons": "^5.4.0",
     "react-resizable-panels": "^2.1.7",
@@ -125,8 +125,8 @@
     "@types/node": "20.19.27",
     "@types/passport": "^1.0.17",
     "@types/passport-local": "^1.0.38",
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.20",
@@ -141,7 +141,11 @@
   "overrides": {
     "drizzle-kit": {
       "@esbuild-kit/esm-loader": "npm:tsx@^4.20.4"
-    }
+    },
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
