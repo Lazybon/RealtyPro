@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: [
     'localhost',
     '127.0.0.1',
+    '*.vercel.app',
     '*.replit.dev',
     '*.worf.replit.dev',
     '*.picard.replit.dev',

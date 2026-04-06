@@ -1,0 +1,17 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "buildCommand": "npm ci --include=dev && npm run build:server",
+    "watchPatterns": [
+      "apps/server/**",
+      "packages/database/**",
+      "package.json",
+      "package-lock.json",
+      "railway.json"
+    ]
+  },
+  "deploy": {
+    "startCommand": "npm run start:server",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}

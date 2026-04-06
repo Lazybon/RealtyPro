@@ -9,7 +9,10 @@ const server = new ApolloServer<Context>({
   introspection: true,
 });
 
-const PORT = parseInt(process.env.SERVER_PORT || '4000', 10);
+const PORT = parseInt(
+  process.env.PORT || process.env.SERVER_PORT || '4000',
+  10,
+);
 
 async function main() {
   const { url } = await startStandaloneServer(server, {
