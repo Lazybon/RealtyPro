@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
-import { sessionOptions, SessionData } from "@/lib/auth";
+import { getSessionOptions, SessionData } from "@/lib/auth";
 import { getServerGraphqlUrl } from "@/lib/graphql-url";
 
 export async function POST(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const graphqlUrl = getServerGraphqlUrl();
-
+    console.log('graphqlUrl', graphqlUrl);
     let graphqlResponse;
     try {
       graphqlResponse = await fetch(graphqlUrl, {
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({ success: true, user });
     
-    const session = await getIronSession<SessionData>(request, response, sessionOptions);
+    const session = await getIronSession<SessionData>(request, response, getSessionOptions());
     session.userId = user.id;
     session.accessToken = token;
     session.claims = {

@@ -1,6 +1,6 @@
 import { getIronSession, SessionOptions, IronSession } from "iron-session";
 import { cookies } from "next/headers";
-import { getServerGraphqlUrl } from "@/lib/graphql-url";
+import { getMonorepoEnv, getServerGraphqlUrl } from "@/lib/graphql-url";
 
 export interface SessionData {
   userId?: string;
@@ -14,20 +14,34 @@ export interface SessionData {
   };
 }
 
-export const sessionOptions: SessionOptions = {
-  password: process.env.SESSION_SECRET!,
-  cookieName: "realtypro_session",
-  cookieOptions: {
-    secure: process.env.NODE_ENV === "production",
-    httpOnly: true,
-    sameSite: "lax" as const,
-    maxAge: 60 * 60 * 24 * 7,
-  },
-};
+let sessionOptionsCache: SessionOptions | null = null;
+
+export function getSessionOptions(): SessionOptions {
+  if (sessionOptionsCache) return sessionOptionsCache;
+
+  const password = getMonorepoEnv("SESSION_SECRET");
+  if (!password || password.length < 32) {
+    throw new Error(
+      "SESSION_SECRET отсутствует или короче 32 символов. Добавь в RealtyPro/.env.local (корень монорепы).",
+    );
+  }
+
+  sessionOptionsCache = {
+    password,
+    cookieName: "realtypro_session",
+    cookieOptions: {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: "lax" as const,
+      maxAge: 60 * 60 * 24 * 7,
+    },
+  };
+  return sessionOptionsCache;
+}
 
 export async function getSession(): Promise<IronSession<SessionData>> {
   const cookieStore = await cookies();
-  return getIronSession<SessionData>(cookieStore, sessionOptions);
+  return getIronSession<SessionData>(cookieStore, getSessionOptions());
 }
 
 export async function getCurrentUser() {
