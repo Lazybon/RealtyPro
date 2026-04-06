@@ -15,22 +15,40 @@ function isPublicPath(pathname: string): boolean {
   return false;
 }
 
+async function hasValidSession(
+  request: NextRequest,
+  password: string | undefined
+): Promise<boolean> {
+  if (!password) return false;
+  const sessionCookie = request.cookies.get('realtypro_session');
+  if (!sessionCookie?.value) return false;
+  try {
+    const { unsealData } = await import('iron-session');
+    const session = await unsealData<{ userId?: string; accessToken?: string }>(
+      sessionCookie.value,
+      { password }
+    );
+    return !!(session.userId && session.accessToken);
+  } catch {
+    return false;
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const password = process.env.SESSION_SECRET;
+
+  if (pathname === '/login' || pathname === '/register') {
+    if (await hasValidSession(request, password)) {
+      return NextResponse.redirect(new URL('/search', request.url));
+    }
+    return NextResponse.next();
+  }
 
   if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
 
-  const sessionCookie = request.cookies.get('realtypro_session');
-
-  if (!sessionCookie?.value) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('from', pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  const password = process.env.SESSION_SECRET;
   if (!password) {
     console.error('[middleware] SESSION_SECRET is not set — blocking access to protected routes');
     const loginUrl = new URL('/login', request.url);
@@ -38,19 +56,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  try {
-    const { unsealData } = await import('iron-session');
-    const session = await unsealData<{ userId?: string; accessToken?: string }>(
-      sessionCookie.value,
-      { password }
-    );
-
-    if (!session.userId || !session.accessToken) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('from', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-  } catch {
+  if (!(await hasValidSession(request, password))) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('from', pathname);
     return NextResponse.redirect(loginUrl);

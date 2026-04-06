@@ -3,8 +3,10 @@ import { loadEnvConfig } from '@next/env';
 import type { NextConfig } from 'next';
 
 // При `yarn dev` из apps/web Next по умолчанию не читает ../../.env — подтягиваем корень монорепы.
+/** Next сначала грузит .env из apps/web и кэширует результат; без forceReload повторный loadEnvConfig(корень) молча игнорируется (SESSION_SECRET не попадает в middleware). */
 const monorepoRoot = path.resolve(process.cwd(), '../..');
-loadEnvConfig(monorepoRoot);
+const loadDev = process.env.NODE_ENV !== 'production';
+loadEnvConfig(monorepoRoot, loadDev, console, true);
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

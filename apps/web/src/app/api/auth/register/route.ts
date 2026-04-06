@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
     }
 
     const graphqlUrl = getServerGraphqlUrl();
-    console.log('graphqlUrl', graphqlUrl);
     let graphqlResponse;
     try {
       graphqlResponse = await fetch(graphqlUrl, {

@@ -4,9 +4,6 @@ import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { QueryProvider } from '@/lib/query-provider';
 import { Toaster } from '@/components/ui/toaster';
-import { Footer } from '@/components/footer';
-import { Header } from '@/components/header';
-
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
   variable: '--font-sans',
@@ -36,13 +33,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <QueryProvider>
-            <div className="flex min-h-screen flex-col">
-              <Header />
-              <div className="flex-1">{children}</div>
-              <Footer />
-            </div>
-          </QueryProvider>
+          <QueryProvider>{children}</QueryProvider>
           <Toaster />
         </ThemeProvider>
       </body>

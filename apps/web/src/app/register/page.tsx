@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Building2, Mail, Lock, User, Loader2 } from "lucide-react";
 
 function RegisterForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [firstName, setFirstName] = useState(searchParams.get("firstName") || "");
@@ -42,6 +41,7 @@ function RegisterForm() {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password, firstName, lastName }),
       });
 
@@ -52,7 +52,7 @@ function RegisterForm() {
       }
 
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      router.push("/search");
+      window.location.replace("/search");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка регистрации");
     } finally {
@@ -61,8 +61,7 @@ function RegisterForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="p-3 rounded-full bg-primary/10">
@@ -176,7 +175,6 @@ function RegisterForm() {
           </CardFooter>
         </form>
       </Card>
-    </div>
   );
 }
 
@@ -184,7 +182,7 @@ export default function RegisterPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+        <div className="flex min-h-[50vh] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden />
         </div>
       }
