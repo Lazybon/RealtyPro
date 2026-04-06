@@ -10,7 +10,6 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@repo/database": "*",
     "@apollo/server": "^4.11.2",
     "@pothos/core": "^4.3.0",
     "@prisma/adapter-pg": "^7.2.0",

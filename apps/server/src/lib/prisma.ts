@@ -1,4 +1,4 @@
-import { getPgPoolConfig } from '@repo/database/pg-pool';
+import { getPgPoolConfig } from './pg-pool.js';
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
