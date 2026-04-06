@@ -1,14 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LandingHeader } from '@/components/landing-header';
 import { LandingFooter } from '@/components/landing-footer';
-import { RegistrationModal } from '@/components/registration-modal';
+import { WEB_APP_URL } from '@/lib/web-app-url';
 import {
-  Home as HomeIcon,
   Search,
   FileText,
   CheckCircle,
@@ -147,13 +146,9 @@ const securitySteps = [
 ];
 
 export default function LandingPage() {
-  const [registerOpen, setRegisterOpen] = useState(false);
-
-  const openRegister = () => setRegisterOpen(true);
-
   return (
     <div className="min-h-screen bg-background">
-      <LandingHeader onRegisterClick={openRegister} />
+      <LandingHeader />
 
       <main>
         <section className="relative overflow-hidden">
@@ -178,13 +173,17 @@ export default function LandingPage() {
                 Проверенные квартиры, безопасные платежи и полное юридическое сопровождение онлайн.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button size="lg" onClick={openRegister} data-testid="button-find-apartment">
-                  <Search className="mr-2 h-4 w-4" />
-                  Найти квартиру
+                <Button size="lg" asChild data-testid="button-find-apartment">
+                  <Link href={`${WEB_APP_URL}/search`}>
+                    <Search className="mr-2 h-4 w-4" />
+                    Найти квартиру
+                  </Link>
                 </Button>
-                <Button size="lg" variant="outline" onClick={openRegister} data-testid="button-make-deal">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Оформить сделку
+                <Button size="lg" variant="outline" asChild data-testid="button-make-deal">
+                  <Link href={`${WEB_APP_URL}/register`}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Оформить сделку
+                  </Link>
                 </Button>
               </div>
 
@@ -215,37 +214,37 @@ export default function LandingPage() {
                   Лучшие квартиры от собственников за последнюю неделю
                 </p>
               </div>
-              <button
-                onClick={openRegister}
+              <Link
+                href={`${WEB_APP_URL}/search`}
                 className="hidden items-center gap-1 text-sm font-medium text-primary hover:underline sm:flex"
                 data-testid="link-view-all"
               >
                 Смотреть все
                 <ArrowRight className="h-4 w-4" />
-              </button>
+              </Link>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {apartments.map((apartment) => (
-                <Card
+                <Link
                   key={apartment.id}
-                  className="group cursor-pointer overflow-hidden transition-all hover:shadow-lg"
-                  onClick={openRegister}
+                  href={`${WEB_APP_URL}/search`}
+                  className="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   data-testid={`card-apartment-${apartment.id}`}
                 >
+                  <Card className="h-full cursor-pointer overflow-hidden transition-all hover:shadow-lg">
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <img
                       src={apartment.image}
                       alt={apartment.title}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                    <button
-                      className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-muted-foreground transition-colors hover:bg-white hover:text-rose-500"
-                      onClick={(e) => { e.stopPropagation(); openRegister(); }}
+                    <span
+                      className="pointer-events-none absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-muted-foreground"
                       data-testid={`button-favorite-${apartment.id}`}
                     >
                       <Heart className="h-4 w-4" />
-                    </button>
+                    </span>
                     <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
                       {apartment.badges.map((badge) => (
                         <Badge
@@ -290,7 +289,8 @@ export default function LandingPage() {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>
@@ -370,13 +370,8 @@ export default function LandingPage() {
                     <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
                       {service.description}
                     </p>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={openRegister}
-                      data-testid={`button-service-${service.title.toLowerCase().replace(/\s+/g, '-')}`}
-                    >
-                      Подробнее
+                    <Button variant="outline" className="w-full" asChild data-testid={`button-service-${service.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                      <Link href={`${WEB_APP_URL}/services`}>Подробнее</Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -558,13 +553,8 @@ export default function LandingPage() {
                   </p>
                 </div>
                 <div className="flex gap-4">
-                  <Button
-                    size="lg"
-                    variant="secondary"
-                    onClick={openRegister}
-                    data-testid="button-cta-register"
-                  >
-                    Создать аккаунт
+                  <Button size="lg" variant="secondary" asChild data-testid="button-cta-register">
+                    <Link href={`${WEB_APP_URL}/register`}>Создать аккаунт</Link>
                   </Button>
                 </div>
               </CardContent>
@@ -573,9 +563,12 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <LandingFooter onRegisterClick={openRegister} />
+      <LandingFooter />
 
-      <RegistrationModal open={registerOpen} onOpenChange={setRegisterOpen} />
+      {/*
+      Раньше: RegistrationModal с формой (имя, email) и переходом на /register веб-приложения.
+      Форма отключена — все CTA ведут на WEB_APP_URL (см. @/lib/web-app-url).
+      */}
     </div>
   );
 }

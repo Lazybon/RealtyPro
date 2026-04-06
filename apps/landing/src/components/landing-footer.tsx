@@ -1,12 +1,9 @@
 'use client';
 
 import { Building2 } from 'lucide-react';
+import { WEB_APP_URL } from '@/lib/web-app-url';
 
-interface LandingFooterProps {
-  onRegisterClick: () => void;
-}
-
-export function LandingFooter({ onRegisterClick }: LandingFooterProps) {
+export function LandingFooter() {
   return (
     <footer className="border-t bg-muted/30">
       <div className="container mx-auto px-4 py-8">
@@ -25,19 +22,31 @@ export function LandingFooter({ onRegisterClick }: LandingFooterProps) {
             <h3 className="mb-3 text-sm font-semibold">Платформа</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <button onClick={onRegisterClick} className="hover:text-foreground transition-colors" data-testid="link-footer-search">
+                <a
+                  href={`${WEB_APP_URL}/search`}
+                  className="hover:text-foreground transition-colors"
+                  data-testid="link-footer-search"
+                >
                   Поиск недвижимости
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={onRegisterClick} className="hover:text-foreground transition-colors" data-testid="link-footer-services">
+                <a
+                  href={`${WEB_APP_URL}/services`}
+                  className="hover:text-foreground transition-colors"
+                  data-testid="link-footer-services"
+                >
                   Сервисы
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={onRegisterClick} className="hover:text-foreground transition-colors" data-testid="link-footer-mortgage">
+                <a
+                  href={`${WEB_APP_URL}/mortgage`}
+                  className="hover:text-foreground transition-colors"
+                  data-testid="link-footer-mortgage"
+                >
                   Ипотечный калькулятор
-                </button>
+                </a>
               </li>
             </ul>
           </div>
